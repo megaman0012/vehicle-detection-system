@@ -1,0 +1,23 @@
+{
+  "name": "vehicle-detection-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Vehicle Detection System",
+  "main": "index.html",
+  "scripts": {
+    "dev": "http-server -p 8080",
+    "build": "mkdir -p dist && cp -r * dist/",
+    "start": "http-server dist -p 80",
+    "healthz": "echo 'OK'"
+  },
+  "keywords": [
+    "vehicle",
+    "detection",
+    "frontend",
+    "bootstrap"
+  ],
+  "author": "Vehicle Detection System Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

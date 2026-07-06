@@ -1,0 +1,20 @@
+# AI Service Dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# AI/ML Dependencies
+opencv-python==4.8.1.78
+ultralytics==8.2.0
+numpy==1.24.3
+paddleocr==2.7.0.3
+scipy==1.11.4
+
+# For communication with backend
+requests==2.31.0
+aiohttp==3.9.0
+
+# For development (optional)
+# pytest==7.4.0
+# pytest-asyncio==0.23.0

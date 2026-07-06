@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/vehicle_detection
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-secret-key-here-change-in-production
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+
+  # AI Service
+  ai_service:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - MODEL_PATH=/app/models
+      - DEVICE=cuda  # Will use GPU if available, otherwise CPU
+    volumes:
+      - ./ai:/app
+      - ./ai/models:/app/models
+      - ./ai/logs:/app/logs
+      - nvidia_driver_390:/usr/lib/nvidia:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    depends_on:
+      - backend
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+    # Uncomment the following lines if you have NVIDIA GPU and want to use it
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Frontend (served by Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+
+  # Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=vehicle_detection
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+
+  # Redis (for caching and queues)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (optional, if you want to add SSL termination or load balancing)
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx:/etc/nginx/conf.d
+  #     - ./certs:/etc/nginx/certs
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - vehicle_network
+  #   restart: unless-stopped
+
+networks:
+  vehicle_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  nvidia_driver_390:
+    external: true
