@@ -6,8 +6,8 @@ from starlette.requests import Request
 from starlette.responses import Response
 import json
 import logging
-from app.utils.security import log_audit_event
-from app.database import SessionLocal
+from utils.security import log_audit_event
+from database import SessionLocal
 
 logger = logging.getLogger("audit_middleware")
 

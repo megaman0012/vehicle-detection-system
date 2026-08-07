@@ -6,12 +6,15 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
+    python3-numpy \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and setuptools to avoid compatibility issues
+RUN pip install --upgrade pip setuptools wheel
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --default-timeout=100 --only-binary=:all:
 
 # Copy application code
 COPY . .

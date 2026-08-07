@@ -5,19 +5,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
-from app.routers import auth, users, cameras, vehicles, events, reports, config, whatsapp, system, websocket
-from app.health import router as health_router
-from app.database import engine
-from app import models
-from app.middleware.rate_limit import RateLimitMiddleware
-from app.middleware.audit import AuditMiddleware
+from routers import auth, users, cameras, vehicles, events, reports, config, whatsapp, system, websocket
+from health import router as health_router
+from database import engine
+from models import Base
+from middleware.rate_limit import RateLimitMiddleware
+from middleware.audit import AuditMiddleware
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create database tables
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

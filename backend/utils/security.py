@@ -3,7 +3,7 @@ Security utilities for Vehicle Detection System
 Handles password hashing, JWT tokens, role-based access control, and audit logging
 """
 from datetime import datetime, timedelta
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, Dict, List
 import uuid
 
 from jose import JWTError, jwt
@@ -12,9 +12,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models.user import User
-from app.core.config import settings
+from database import get_db
+from models.user import User
+from config import settings
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -124,7 +124,7 @@ def require_permission(permission: str):
 
 # Audit logging
 import logging
-from app.models.audit import AuditLog
+from models.audit import AuditLog
 
 logger = logging.getLogger("audit")
 

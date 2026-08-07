@@ -30,7 +30,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \\\n    CMD wget -qO- http://localhost/healthz 
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD wget -qO- http://localhost/healthz
 
 # Start nginx
-CMD [\"nginx\", \"-g\", \"daemon off;\"]
+CMD ["nginx", "-g", "daemon off;"]

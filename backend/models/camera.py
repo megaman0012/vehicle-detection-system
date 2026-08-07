@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from backend.models.base import Base
+from models.base import Base
 
 class Camera(Base):
     __tablename__ = "cameras"

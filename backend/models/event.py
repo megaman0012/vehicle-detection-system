@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from backend.models.base import Base
+from models.base import Base
 import enum
 
 class EventType(str, enum.Enum):

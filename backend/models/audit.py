@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 import uuid
 
-from app.database import Base
+from database import Base
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"

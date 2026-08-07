@@ -3,11 +3,11 @@ Initial database setup script.
 Creates initial data like default configurations and admin user.
 """
 from sqlalchemy.orm import Session
-from backend.database import SessionLocal, engine
-from backend.models.base import Base
-from backend.models.user import User
-from backend.models.config import SystemConfig
-from backend.utils.security import get_password_hash
+from ..database import SessionLocal, engine
+from ..models.base import Base
+from ..models.user import User
+from ..models.config import SystemConfig
+from ..utils.security import get_password_hash
 import json
 
 def init_db() -> None:

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.database import get_db
-from backend.models.camera import Camera
-from backend.schemas.camera import CameraCreate, CameraUpdate, CameraResponse
-from backend.utils.auth import get_current_active_user
+from database import get_db
+from models.camera import Camera
+from schemas.camera import CameraCreate, CameraUpdate, CameraResponse
+from utils.auth import get_current_active_user
 
 router = APIRouter()
 

@@ -4,18 +4,18 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 import logging
 
-from backend.database import get_db
-from backend.models.user import User
-from backend.schemas.user import UserCreate, UserResponse, Token, UserLogin
-from backend.utils.security import (
+from database import get_db
+from models.user import User
+from schemas.user import UserCreate, UserResponse, Token, UserLogin
+from utils.security import (
     verify_password, 
     get_password_hash, 
     create_access_token, 
     create_refresh_token,
     verify_token
 )
-from backend.utils.auth import authenticate_user
-from backend.config import settings
+from utils.auth import authenticate_user
+from config import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.sql import func
-from backend.models.base import Base
+from models.base import Base
 
 class SystemConfig(Base):
     __tablename__ = "system_configs"

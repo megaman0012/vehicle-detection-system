@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from backend.database import get_db
-from backend.models.vehicle import DetectedVehicle, VehicleType
-from backend.schemas.vehicle import DetectedVehicleCreate, DetectedVehicleUpdate, DetectedVehicleResponse
-from backend.utils.auth import get_current_active_user
+from database import get_db
+from models.vehicle import DetectedVehicle, VehicleType
+from schemas.vehicle import DetectedVehicleCreate, DetectedVehicleUpdate, DetectedVehicleResponse
+from utils.auth import get_current_active_user
 
 router = APIRouter()
 

@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from backend.database import get_db
-from backend.models.event import Event, EventType
-from backend.schemas.event import EventCreate, EventUpdate, EventResponse
-from backend.utils.auth import get_current_active_user
+from database import get_db
+from models.event import Event, EventType
+from schemas.event import EventCreate, EventUpdate, EventResponse
+from utils.auth import get_current_active_user
 
 router = APIRouter()
 

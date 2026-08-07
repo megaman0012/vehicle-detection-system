@@ -6,7 +6,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 import time
 import logging
-from app.utils.security import check_api_rate_limit
+from utils.security import check_api_rate_limit
 
 logger = logging.getLogger("rate_limit")
 

@@ -4,18 +4,18 @@ FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including pip
 RUN apt-get update && apt-get install -y \
     python3-pip \
-    python3-dev \
-    ffmpeg \
-    libsm6 \
-    libxext6 \
+    python3-numpy \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and setuptools to avoid compatibility issues
+RUN pip3 install --upgrade pip setuptools wheel
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt --default-timeout=100 --only-binary=:all:
 
 # Copy application code
 COPY . .

@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 import logging
 
-from app.services.whatsapp_service import whatsapp_service, initialize_whatsapp_service
-from app.utils.security import get_current_active_user
-from app.models.user import User
+from services.whatsapp_service import whatsapp_service, initialize_whatsapp_service
+from utils.security import get_current_active_user
+from models.user import User
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

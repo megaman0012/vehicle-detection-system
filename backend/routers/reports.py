@@ -4,9 +4,9 @@ from typing import Optional
 from datetime import datetime, timedelta
 import io
 
-from backend.database import get_db
-from backend.utils.auth import get_current_active_user
-from backend.services.report_service import ReportService
+from database import get_db
+from utils.auth import get_current_active_user
+from services.report_service import ReportService
 
 router = APIRouter()
 

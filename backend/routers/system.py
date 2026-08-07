@@ -5,9 +5,9 @@ import platform
 import psutil
 import datetime
 
-from backend.database import get_db
-from backend.utils.auth import get_current_active_user
-from backend.services.system_service import SystemService
+from database import get_db
+from utils.auth import get_current_active_user
+from services.system_service import SystemService
 
 router = APIRouter()
 
@@ -61,7 +61,7 @@ async def get_system_metrics(
     disk = psutil.disk_usage('/')
     
     # Database metrics
-    from backend.database import engine
+    from database import engine
     from sqlalchemy import text
     
     try:

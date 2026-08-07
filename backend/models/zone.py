@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import json
-from backend.models.base import Base
+from models.base import Base
 
 class Zone(Base):
     __tablename__ = "zones"
