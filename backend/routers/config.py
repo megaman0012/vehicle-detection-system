@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from database import get_db
 from models.config import SystemConfig
+from models.user import User
 from schemas.config import SystemConfigCreate, SystemConfigUpdate, SystemConfigResponse
 from utils.auth import get_current_active_user
 

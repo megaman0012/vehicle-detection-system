@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from database import get_db
 from models.vehicle import DetectedVehicle, VehicleType
+from models.user import User
 from schemas.vehicle import DetectedVehicleCreate, DetectedVehicleUpdate, DetectedVehicleResponse
 from utils.auth import get_current_active_user
 

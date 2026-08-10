@@ -26,7 +26,7 @@ class Event(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Who triggered/resolved
     
     # Additional data
-    metadata = Column(Text, nullable=True)  # JSON string for additional data
+    event_metadata = Column(Text, nullable=True)  # JSON string for additional data
     
     # Relationships
     vehicle = relationship("DetectedVehicle", back_populates="events")
@@ -37,9 +37,9 @@ class Event(Base):
     def get_metadata(self):
         """Return metadata as dict"""
         import json
-        return json.loads(self.metadata) if self.metadata else {}
+        return json.loads(self.event_metadata) if self.event_metadata else {}
 
     def set_metadata(self, data):
         """Set metadata from dict"""
         import json
-        self.metadata = json.dumps(data)
+        self.event_metadata = json.dumps(data)

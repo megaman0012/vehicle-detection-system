@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 
 from database import get_db
 from models.event import Event, EventType
+from models.camera import Camera
+from models.vehicle import DetectedVehicle
+from models.zone import Zone
+from models.user import User
 from schemas.event import EventCreate, EventUpdate, EventResponse
 from utils.auth import get_current_active_user
 

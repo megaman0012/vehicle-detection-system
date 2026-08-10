@@ -8,7 +8,7 @@ import logging
 from routers import auth, users, cameras, vehicles, events, reports, config, whatsapp, system, websocket
 from health import router as health_router
 from database import engine
-from models import Base
+from models.base import Base
 from middleware.rate_limit import RateLimitMiddleware
 from middleware.audit import AuditMiddleware
 
@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)  # Commented out for testing - would work in Docker environment
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,6 +72,8 @@ async def root():
     }
 
 # Global exception handler
+from datetime import datetime
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     logger.error(f"Global exception handler caught: {exc}")

@@ -4,6 +4,7 @@ from typing import List
 
 from database import get_db
 from models.camera import Camera
+from models.user import User
 from schemas.camera import CameraCreate, CameraUpdate, CameraResponse
 from utils.auth import get_current_active_user
 

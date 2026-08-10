@@ -6,6 +6,7 @@ import psutil
 import datetime
 
 from database import get_db
+from models.user import User
 from utils.auth import get_current_active_user
 from services.system_service import SystemService
 

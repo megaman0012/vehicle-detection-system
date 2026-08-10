@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime, timedelta
 import io
 
 from database import get_db
+from models.user import User
 from utils.auth import get_current_active_user
 from services.report_service import ReportService
 

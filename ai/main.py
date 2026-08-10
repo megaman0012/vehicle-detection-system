@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 from app.routers import detection, health
-from app.health import router as health_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -39,7 +38,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(health_router, tags=["health"])
+app.include_router(health.router, tags=["health"])
 app.include_router(detection.router, prefix="/api/detection", tags=["detection"])
 
 # Root endpoint
@@ -53,6 +52,8 @@ async def root():
     }
 
 # Global exception handler
+from datetime import datetime
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     logger.error(f"Global exception handler caught: {exc}")
