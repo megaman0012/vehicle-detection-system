@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     # WhatsApp (Evolution API)
     WHATSAPP_API_URL: str = "http://localhost:8080"
     WHATSAPP_API_KEY: str = ""
+    WHATSAPP_INSTANCE_NAME: str = "vehicle-detection"
+    WHATSAPP_ENABLED: bool = False
     
     # AI Services
     YOLO_MODEL_PATH: str = "models/yolov8n.pt"

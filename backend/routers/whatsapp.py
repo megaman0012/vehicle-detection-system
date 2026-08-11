@@ -9,6 +9,7 @@ import logging
 from services.whatsapp_service import whatsapp_service, initialize_whatsapp_service
 from utils.security import get_current_active_user
 from models.user import User
+from config import settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -45,13 +46,14 @@ class WhatsAppResponse(BaseModel):
     error: Optional[str] = None
     response: Optional[Dict[str, Any]] = None
 
-# Initialize WhatsApp service (in a real app, this would come from environment variables)
-# For now, we'll initialize with placeholder values - should be configured via API
+# Initialize WhatsApp service from environment variables (WHATSAPP_API_URL,
+# WHATSAPP_API_KEY, WHATSAPP_INSTANCE_NAME) set in docker-compose/.env.
+# The dynamic per-user configuration via /configure still overrides this singleton at runtime.
 try:
     whatsapp_service = initialize_whatsapp_service(
-        api_url="http://localhost:8080",  # Default Evolution API URL
-        api_key="your-api-key-here",
-        instance_name="vehicle-detection"
+        api_url=settings.WHATSAPP_API_URL,
+        api_key=settings.WHATSAPP_API_KEY,
+        instance_name=settings.WHATSAPP_INSTANCE_NAME
     )
 except Exception as e:
     logger.warning(f"Could not initialize WhatsApp service: {e}")
@@ -246,11 +248,29 @@ async def get_whatsapp_status(
             "configured": False,
             "message": "WhatsApp service not configured"
         }
-    
-    # In a real implementation, you might want to check if the service is actually working
+
+    # Query the real connection state from Evolution API instead of only
+    # reporting that the service was configured.
+    conn = await whatsapp_service.get_connection_state()
+
+    state = conn.get("state")
+    connected = bool(conn.get("connected"))
+
+    if state is None:
+        return {
+            "configured": True,
+            "instance_name": whatsapp_service.instance_name,
+            "api_url": whatsapp_service.api_url,
+            "connected": connected,
+            "connection_state": "error",
+            "message": conn.get("error", "No se pudo consultar el estado de conexión")
+        }
+
     return {
         "configured": True,
         "instance_name": whatsapp_service.instance_name,
         "api_url": whatsapp_service.api_url,
-        "message": "WhatsApp service is configured"
+        "connected": connected,
+        "connection_state": state,
+        "message": "WhatsApp conectado" if connected else f"WhatsApp {state}"
     }

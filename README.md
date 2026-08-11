@@ -137,7 +137,8 @@ PARKING_TIME_THRESHOLD=300  # Segundos sin movimiento para considerar un vehícu
 MOTION_THRESHOLD_PIXELS=50
 
 # WhatsApp Configuration (Evolution API)
-WHATSAPP_API_URL=http://evolution-api:8080
+# Con Evolution corriendo en el MISMO servidor, usar host.docker.internal (no localhost)
+WHATSAPP_API_URL=http://host.docker.internal:8080
 WHATSAPP_API_KEY=your-evolution-api-key
 WHATSAPP_INSTANCE_NAME=vehicle-detection
 WHATSAPP_ENABLED=false
@@ -253,22 +254,40 @@ Incluye:
 El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-alojada que conecta tu número de WhatsApp vía código QR).
 
 **Cómo funciona:**
-1. El backend habla con Evolution API usando `api_url` + `api_key` + `instance_name` (`backend/services/whatsapp_service.py`).
-2. Los envíos son **manuales/por evento**: desde un evento del Historial (botón WhatsApp) o desde Configuración (mensaje de prueba). La alerta de estacionamiento formateada (`send_parking_alert`) también está disponible por API.
+1. El backend lee la configuración desde variables de entorno al arrancar (`WHATSAPP_API_URL`, `WHATSAPP_API_KEY`, `WHATSAPP_INSTANCE_NAME`, definidas en `.env` y pasadas por `docker-compose.yml` al servicio `backend`). Ya no usa valores fijos hardcodeados.
+2. El backend habla con Evolution API usando esos tres datos (`backend/services/whatsapp_service.py`).
+3. Los envíos son **manuales/por evento**: desde un evento del Historial (botón WhatsApp) o desde Configuración (mensaje de prueba). La alerta de estacionamiento formateada (`send_parking_alert`) también está disponible por API.
+4. `GET /api/whatsapp/status` **consulta el estado real** de la instancia en Evolution (`GET /instance/connectionState/{instancia}`). Devuelve `connected: true/false` y `connection_state: open|connecting|close|...`, por lo que el panel refleja la conexión real del número (no solo "configurado").
 
 **Configuración (2 pasos):**
 
-1. **Levanta una instancia de Evolution API** (puede ser en este u otro servidor; imagen oficial `atendai/evolution-api`):
+1. **Levanta una instancia de Evolution API** (puede ser en este u otro servidor; la imagen oficial actual es `evoapicloud/evolution-api` — la antigua `atendai/evolution-api` ya no publica imágenes y dará *pull access denied*):
    ```bash
    # 1) Genera tu API Key (la inventas tú; es el secreto que conecta tu sistema con Evolution)
    openssl rand -hex 32
 
-   # 2) Levanta Evolution API
-   docker run -d --name evolution --restart unless-stopped -p 8080:8080 \
+   # 2) Evolution API v2 requiere una base de datos. Crea una red y un PostgreSQL dedicado:
+   docker network create evolution-net
+   docker run -d --name evolution-postgres --network evolution-net \
+     -e POSTGRES_USER=evolution \
+     -e POSTGRES_PASSWORD=evolution_db_pwd \
+     -e POSTGRES_DB=evolution \
+     -v evolution_db:/var/lib/postgresql/data \
+     postgres:15
+
+   # 3) Levanta Evolution API (sin Database Provider el contenedor muere con
+   #    "Database provider invalid" en un loop de restarts):
+   docker run -d --name evolution --network evolution-net --restart unless-stopped \
+     -p 8080:8080 \
      -e AUTHENTICATION_API_KEY=LA_CLAVE_QUE_GENERASTE \
+     -e DATABASE_PROVIDER=postgresql \
+     -e DATABASE_CONNECTION_URI=postgresql://evolution:evolution_db_pwd@evolution-postgres:5432/evolution \
+     -e DATABASE_SAVE_DATA_INSTANCE=true \
+     -e DATABASE_SAVE_DATA_NEW_MESSAGE=true \
+     -e CACHE_LOCAL_ENABLED=true \
      -v evolution_store:/evolution/store \
      -v evolution_instances:/evolution/instances \
-     atendai/evolution-api
+     evoapicloud/evolution-api:latest
    ```
    Luego crea la instancia de WhatsApp y vincula tu número escaneando el QR:
    ```bash
@@ -277,24 +296,27 @@ El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-
      -H "Content-Type: application/json" \
      -d '{"instanceName":"vehicle-detection","qrcode":true,"integration":"WHATSAPP-BAILEYS"}'
    # → en la respuesta viene el QR en base64; guárdalo en un archivo .png y
-   #   escanéalo desde WhatsApp: Ajustes > Dispositivos vinculados > Vincular dispositivo
+   #   escanéalo desde WhatsApp: Ajustes > Dispositivos vinculados > Vincular dispositivo.
+   #   El QR caduca en ~1 minuto; si se vence, vuelve a pedir el código:
+   curl http://localhost:8080/instance/qrcode/vehicle-detection \
+     -H "apikey: LA_CLAVE_QUE_GENERASTE"
 
    # Verifica que quedó conectada:
    curl http://localhost:8080/instance/connectionState/vehicle-detection \
      -H "apikey: LA_CLAVE_QUE_GENERASTE"
    # → {"instance":{"state":"open",...}} significa conectado
    ```
-   Los 3 datos que pide el sistema son: **URL** (`http://IP-evolution:8080`), **API Key** (la que generaste) e **instancia** (`vehicle-detection`). Si Evolution corre **en este mismo servidor**, el backend lo alcanza por `http://host.docker.internal:8080` (el compose ya incluye `extra_hosts: host.docker.internal:host-gateway` en el servicio backend).
+   Los 3 datos que pide el sistema son: **URL** (`http://IP-evolution:8080`), **API Key** (la que generaste) e **instancia** (`vehicle-detection`). Si Evolution corre **en este mismo servidor**, el backend lo alcanza por `http://host.docker.internal:8080` (el compose ya incluye `extra_hosts: host.docker.internal:host-gateway` en el servicio `backend`).
 
-2. **Configúralo en el sistema:** Menú → Configuración → "Notificaciones WhatsApp" → ingresa `URL de la API (Evolution)`, `API Key` e `instancia` → "Guardar Configuración" → "Probar Conexión".
+2. **Configúralo en el sistema:** Menú → Configuración → "Notificaciones WhatsApp" → ingresa `URL de la API (Evolution)`, `API Key` e `instancia` → "Guardar Configuración" → "Probar Conexión". El estado del panel muestra ahora la conexión real (verde "Conectado" si `state=open`).
 
 **Prueba rápida:**
 - En Configuración: botón "Enviar mensaje de prueba" con tu número (formato con código de país, solo dígitos: ej. `584121234567`).
 - En Historial de Eventos: botón verde WhatsApp de cualquier evento → pide número → encola `POST /api/whatsapp/send-message`.
 
-**Nota:** la configuración de WhatsApp se guarda **en memoria** (singleton del backend), no en base de datos; se pierde al reiniciar el contenedor `backend`. Los mensajes se encolan en background (`BackgroundTasks`). Actualmente el envío es manual; no hay aún envío automático al detectar estacionamiento (las claves `whatsapp_enabled`/`default_whatsapp_numbers` existen en la BD pero aún no se leen para auto-notificar).
+**Nota:** la configuración de WhatsApp se guarda **en memoria** (singleton del backend); al reiniciar el contenedor `backend` se vuelve a inicializar con los valores de `.env` (ya no con placeholders). La configuración dinámica vía `/configure` sigue disponible y sobreescribe al singleton en runtime. Los mensajes se encolan en background (`BackgroundTasks`). Actualmente el envío es manual; no hay aún envío automático al detectar estacionamiento (las claves `whatsapp_enabled`/`default_whatsapp_numbers` existen en la BD pero aún no se leen para auto-notificar).
 
-**Compatibilidad:** el servicio usa los endpoints **v2** de Evolution API (`POST /message/sendText/{instancia}` con `{number, text}` para enviar, y `GET /instance/connectionState/{instancia}` para la prueba de conexión). La imagen `atendai/evolution-api` (2.x) es la soportada.
+**Compatibilidad:** el servicio usa los endpoints **v2** de Evolution API (`POST /message/sendText/{instancia}` con `{number, text}` para enviar, y `GET /instance/connectionState/{instancia}` para la prueba de conexión y el estado). La imagen soportada es `evoapicloud/evolution-api` (2.x).
 
 ### API REST
 
@@ -421,7 +443,9 @@ Para manejar múltiples cámaras de alta resolución:
    - Considerar agregar más recursos o distribuir la carga
 
 3. **Problemas con WhatsApp/Evolution API**:
-   - Verificar que la API de Evolution esté accesible desde el contenedor
+   - Verificar que la API de Evolution esté accesible desde el contenedor (`http://host.docker.internal:8080` si corre en el mismo servidor; ver `docker ps` y probar con `curl` dentro del contenedor: `docker exec vehicle-detection-system-backend-1 python3 -c "import httpx; print(httpx.get('http://host.docker.internal:8080').status_code)"`).
+   - Si el contenedor `evolution` entra en `Restarting (1)`, revisa los logs con `docker logs evolution` — probablemente falta la base de datos (`Database provider invalid`) o la clave es inválida.
+   - `GET /api/whatsapp/status` devuelve `connection_state: error` si el backend no alcanza a Evolution; revisa que la URL/API Key sean correctas en `.env` y reinicia el backend (`docker compose up -d --no-deps backend`).
    - Probar la conexión desde el endpoint de prueba en la configuración de WhatsApp
    - Verificar que el número de teléfono tenga el formato correcto (con código de país)
    - Revisar los logs del servicio de WhatsApp para errores específicos

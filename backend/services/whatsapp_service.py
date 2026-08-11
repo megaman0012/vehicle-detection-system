@@ -228,6 +228,62 @@ class WhatsAppService:
                 "error": f"Unexpected error: {str(e)}"
             }
 
+    async def get_connection_state(self) -> Dict[str, Any]:
+        """
+        Get the current connection state of the WhatsApp instance
+        from the Evolution API (open / close / connecting / ...).
+
+        Returns:
+            Dictionary with keys: success, connected, state, response
+        """
+        # Evolution API v2 endpoint: connection state of the configured instance
+        url = f"{self.api_url}/instance/connectionState/{self.instance_name}"
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(
+                    url,
+                    headers=self.headers
+                )
+                response.raise_for_status()
+                result = response.json()
+
+                instance = result.get("instance", {})
+                state = instance.get("state")
+
+                return {
+                    "success": True,
+                    "connected": state == "open",
+                    "state": state,
+                    "response": result
+                }
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error getting WhatsApp connection state: {e.response.status_code} - {e.response.text}")
+            return {
+                "success": False,
+                "connected": False,
+                "state": None,
+                "error": f"HTTP {e.response.status_code}: {e.response.text}",
+                "response": e.response.json() if e.response.headers.get("content-type") == "application/json" else None
+            }
+        except httpx.RequestError as e:
+            logger.error(f"Request error getting WhatsApp connection state: {str(e)}")
+            return {
+                "success": False,
+                "connected": False,
+                "state": None,
+                "error": f"Request failed: {str(e)}"
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error getting WhatsApp connection state: {str(e)}")
+            return {
+                "success": False,
+                "connected": False,
+                "state": None,
+                "error": f"Unexpected error: {str(e)}"
+            }
+
 # Singleton instance (will be initialized with actual values from environment)
 whatsapp_service = None
 

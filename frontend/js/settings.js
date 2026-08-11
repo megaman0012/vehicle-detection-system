@@ -234,9 +234,13 @@ function loadWhatsAppStatus() {
         const el = document.getElementById('whatsappStatus');
         if (!el) return;
         if (status.configured) {
+            const state = status.connection_state || 'desconocido';
+            const stateBadge = status.connected
+                ? '<span class="badge bg-success">Conectado</span>'
+                : `<span class="badge bg-secondary">${Common.escapeHtml(String(state).toUpperCase())}</span>`;
             el.className = 'alert alert-success';
             el.innerHTML = `<i class="fas fa-check-circle me-2"></i>
-                WhatsApp configurado — Instancia: <strong>${Common.escapeHtml(status.instance_name)}</strong> · API: <code>${Common.escapeHtml(status.api_url)}</code>`;
+                WhatsApp configurado — Instancia: <strong>${Common.escapeHtml(status.instance_name)}</strong> · API: <code>${Common.escapeHtml(status.api_url)}</code> ${stateBadge}`;
             document.getElementById('whatsappApiUrl').value = status.api_url || '';
             document.getElementById('whatsappInstance').value = status.instance_name || '';
         } else {

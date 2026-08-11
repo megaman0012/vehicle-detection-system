@@ -33,6 +33,10 @@ services:
       - SECRET_KEY=your-secret-key-here-change-in-production
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - WHATSAPP_API_URL=${WHATSAPP_API_URL:-http://host.docker.internal:8080}
+      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY:-}
+      - WHATSAPP_INSTANCE_NAME=${WHATSAPP_INSTANCE_NAME:-vehicle-detection}
+      - WHATSAPP_ENABLED=${WHATSAPP_ENABLED:-false}
     volumes:
       - ./backend:/app
       - ./backend/logs:/app/logs
