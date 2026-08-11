@@ -265,6 +265,18 @@ const API = (function() {
         return request('/api/users/');
     }
 
+    function createUser(data) {
+        return request('/api/users/', { method: 'POST', body: data });
+    }
+
+    function updateUser(userId, data) {
+        return request('/api/users/' + userId, { method: 'PUT', body: data });
+    }
+
+    function deleteUser(userId) {
+        return request('/api/users/' + userId, { method: 'DELETE' });
+    }
+
     function getCurrentUser() {
         return request('/api/auth/me');
     }
@@ -349,6 +361,9 @@ const API = (function() {
         testWhatsApp: testWhatsApp,
         sendWhatsAppMessage: sendWhatsAppMessage,
         getUsers: getUsers,
+        createUser: createUser,
+        updateUser: updateUser,
+        deleteUser: deleteUser,
         getCurrentUser: getCurrentUser,
         aiGetStatus: aiGetStatus,
         aiStartCamera: aiStartCamera,

@@ -74,13 +74,104 @@
 
             <!-- Users Content -->
             <div class="container-fluid px-4" id="users-content">
-                <div class="col-12 py-5 text-center text-muted">
-                    <i class="fas fa-user-shield fa-3x opacity-25 mb-3"></i>
-                    <p class="mb-0">Gestión de usuarios en construcción.</p>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Usuarios del Sistema</h5>
+                                <button class="btn btn-primary" id="newUserBtn">
+                                    <i class="fas fa-plus me-1"></i> Nuevo Usuario
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="usersTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Usuario</th>
+                                                <th>Nombre</th>
+                                                <th>Email</th>
+                                                <th>Rol</th>
+                                                <th>Estado</th>
+                                                <th>Creado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando usuarios...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="userForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="userId">
+                        <div class="mb-3">
+                            <label for="userUsername" class="form-label">Usuario *</label>
+                            <input type="text" class="form-control" id="userUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userFullName" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="userFullName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="userEmail" required>
+                        </div>
+                        <div class="mb-3" id="userPasswordField">
+                            <label for="userPassword" class="form-label">Contraseña *</label>
+                            <input type="password" class="form-control" id="userPassword" minlength="8" placeholder="Mínimo 8 caracteres">
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="userRole" class="form-label">Rol</label>
+                                <select class="form-select" id="userRole">
+                                    <option value="user">Usuario</option>
+                                    <option value="operator">Operador</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label d-block">Estado</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="userActive" checked>
+                                    <label class="form-check-label" for="userActive">Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveUserBtn">
+                            <i class="fas fa-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->

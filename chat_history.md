@@ -336,6 +336,11 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
   - Sección **WhatsApp**: estado actual, formulario de configuración (URL de Evolution, API Key, instancia), botón "Probar Conexión" y formulario para enviar mensaje de prueba.
 - `js/settings.js`: CRUD real contra `/api/config/` y control real de WhatsApp contra `/api/whatsapp/*` con estado visible.
 
+### Paso 7 completado ✅ (página Usuarios)
+- `api.js`: `createUser()`, `updateUser()`, `deleteUser()` contra `/api/users/`.
+- `pages/users.html`: tabla de usuarios (usuario, nombre, email, rol, estado, fecha de creación, acciones) + modal crear/editar con validaciones (email, contraseña mínima 8 caracteres, roles admin/operator/user, activo/inactivo).
+- `js/users.js`: CRUD real contra `/api/users/`. Al editar se oculta el campo contraseña (el backend no soporta cambio de password por PUT).
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
