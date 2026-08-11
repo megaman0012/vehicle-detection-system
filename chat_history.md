@@ -495,7 +495,8 @@ Se completaron las tareas pendientes de la sesión anterior: se habilitó Docker
   - envío: `POST {api_url}/message/sendText/{instancia}` con body `{number, text}`
   - prueba: `GET {api_url}/instance/connectionState/{instancia}`
 - Se eliminó `self.base_url` (quedaba sin uso). `py_compile` OK; backend reiniciado y `/health` OK (el código va por bind mount `./backend:/app`).
-- README: imagen corregida a `atendai/evolution-api`, pasos reales con QR y verificación de estado.
+- **Alcance desde el contenedor**: las llamadas a Evolution las hace el contenedor `backend`, no el navegador. Se añadió `extra_hosts: host.docker.internal:host-gateway` al servicio backend para que alcance Evolution cuando corre en el mismo host (`http://host.docker.internal:8080`). Verificado: `getent hosts host.docker.internal` → `172.17.0.1`.
+- README: imagen corregida a `atendai/evolution-api`, pasos reales con QR, verificación de estado y uso de `host.docker.internal`.
 
 ### Commits
 - (pendiente de commitear/pushear en esta sesión)

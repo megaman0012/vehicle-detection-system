@@ -19,6 +19,7 @@
 - **Upsert de vehículos** (`routers/vehicles.py`): al re-registrar un `vehicle_id` ya existente (típico tras reiniciar el AI service, que reusa track IDs T-1, T-2...) ahora se actualiza el registro en vez de fallar con `UniqueViolation`; gestiona `last_seen`, `park_start_time` y `total_park_time`
 - **Fix handler global de excepciones** (`main.py`): devolvía un `dict` en vez de `JSONResponse`, provocando `TypeError: 'dict' object is not callable` y respuestas 500 vacías
 - **WhatsApp compatible con Evolution API v2** (`services/whatsapp_service.py`): envío por `POST /message/sendText/{instancia}` con payload `{number, text}` (antes usaba endpoints v1 `/{instance}/sendMessage` con `{textMessage:{text}}`, que dan 404 en `atendai/evolution-api` 2.x); prueba de conexión por `GET /instance/connectionState/{instancia}` (antes `/fetchInstances`, endpoint inexistente). La imagen oficial soportada es `atendai/evolution-api` (2.x)
+- **`docker-compose.yml`**: `extra_hosts: host.docker.internal:host-gateway` en el servicio backend para que pueda alcanzar Evolution API cuando corre en el mismo host (`http://host.docker.internal:8080`)
 
 ### Servicio de IA
 - Mejorado el endpoint de salud (/health/detailed) para incluir verificación de conectividad con el backend

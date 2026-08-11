@@ -284,7 +284,7 @@ El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-
      -H "apikey: LA_CLAVE_QUE_GENERASTE"
    # → {"instance":{"state":"open",...}} significa conectado
    ```
-   Los 3 datos que pide el sistema son: **URL** (`http://IP-evolution:8080`), **API Key** (la que generaste) e **instancia** (`vehicle-detection`).
+   Los 3 datos que pide el sistema son: **URL** (`http://IP-evolution:8080`), **API Key** (la que generaste) e **instancia** (`vehicle-detection`). Si Evolution corre **en este mismo servidor**, el backend lo alcanza por `http://host.docker.internal:8080` (el compose ya incluye `extra_hosts: host.docker.internal:host-gateway` en el servicio backend).
 
 2. **Configúralo en el sistema:** Menú → Configuración → "Notificaciones WhatsApp" → ingresa `URL de la API (Evolution)`, `API Key` e `instancia` → "Guardar Configuración" → "Probar Conexión".
 
