@@ -74,9 +74,109 @@
 
             <!-- Reports Content -->
             <div class="container-fluid px-4" id="reports-content">
-                <div class="col-12 py-5 text-center text-muted">
-                    <i class="fas fa-file-alt fa-3x opacity-25 mb-3"></i>
-                    <p class="mb-0">Reportes en construcción.</p>
+                <!-- Estadísticas -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted">Eventos Totales</h6>
+                                        <h3 class="mb-0" id="stat-total-events">-</h3>
+                                    </div>
+                                    <i class="fas fa-bell fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted">Eventos (30 días)</h6>
+                                        <h3 class="mb-0" id="stat-events-30d">-</h3>
+                                    </div>
+                                    <i class="fas fa-calendar-alt fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted">Vehículos Detectados</h6>
+                                        <h3 class="mb-0" id="stat-total-vehicles">-</h3>
+                                    </div>
+                                    <i class="fas fa-car fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted">Estacionados Ahora</h6>
+                                        <h3 class="mb-0" id="stat-parked-now">-</h3>
+                                    </div>
+                                    <i class="fas fa-parking fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generación de reportes -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Generar Reporte</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="reportForm">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tipo de Reporte</label>
+                                            <select class="form-select" id="reportType">
+                                                <option value="daily">Diario</option>
+                                                <option value="weekly">Semanal</option>
+                                                <option value="monthly">Mensual</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Formato</label>
+                                            <select class="form-select" id="reportFormat">
+                                                <option value="pdf">PDF</option>
+                                                <option value="excel">Excel</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3" id="reportDailyField">
+                                            <label class="form-label">Fecha</label>
+                                            <input type="date" class="form-control" id="reportDailyDate">
+                                        </div>
+                                        <div class="col-md-3" id="reportWeeklyField" style="display:none;">
+                                            <label class="form-label">Fecha de Inicio (semana)</label>
+                                            <input type="date" class="form-control" id="reportWeeklyDate">
+                                        </div>
+                                        <div class="col-md-3" id="reportMonthlyField" style="display:none;">
+                                            <label class="form-label">Mes</label>
+                                            <input type="month" class="form-control" id="reportMonthlyDate">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="submit" class="btn btn-primary w-100" id="generateReportBtn">
+                                                <i class="fas fa-download me-1"></i> Generar y Descargar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

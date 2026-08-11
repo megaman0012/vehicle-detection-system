@@ -237,6 +237,36 @@ const API = (function() {
         return request('/api/auth/me');
     }
 
+    // ---- Report downloads (binary) ----
+
+    async function downloadReport(path, filename) {
+        const headers = {};
+        const token = getToken();
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        const resp = await fetch(path, { headers: headers });
+        if (!resp.ok) {
+            let detail = 'Error al descargar el archivo';
+            try {
+                const body = await resp.json();
+                if (body && body.detail) detail = body.detail;
+            } catch (e) { /* keep default */ }
+            const error = new Error(detail);
+            error.status = resp.status;
+            throw error;
+        }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
     // ---- AI service (proxied through /ai/*) ----
 
     function aiGetStatus() {
@@ -283,6 +313,7 @@ const API = (function() {
         aiGetStatus: aiGetStatus,
         aiStartCamera: aiStartCamera,
         aiStopCamera: aiStopCamera,
-        aiGetCameraResults: aiGetCameraResults
+        aiGetCameraResults: aiGetCameraResults,
+        downloadReport: downloadReport
     };
 })();

@@ -323,6 +323,12 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
   - Dibujo de coordenadas sobre canvas conectado a la API: clic para marcar vértices, deshacer, limpiar y guardar (`PUT /api/zones/{id}`). Se cargan las coordenadas existentes al editar.
 - Eliminado `main.js` (funciones de zona antiguas que solo logueaban) y `js/zone-management.js` (archivo huérfano no referenciado).
 
+### Paso 5 completado ✅ (página Reportes + dashboard real)
+- `api.js`: `downloadReport(path, filename)` — descarga binaria autenticada (blob + objeto URL) para PDF/Excel.
+- `pages/reports.html`: 4 tarjetas de estadísticas (eventos totales, eventos 30 días, vehículos detectados, estacionados ahora) y formulario de generación de reportes (tipo diario/semanal/mensual, formato PDF/Excel, fechas dinámicas).
+- `js/reports.js`: estadísticas reales desde `/api/reports/stats?days=30` y descarga real de `/api/reports/{daily|weekly|monthly}?format=pdf|excel` (se genera el nombre del archivo según `Content-Disposition`).
+- Dashboard (`index.html` + `main.js`): eliminadas las estadísticas hardcodeadas (12/5/4/2, 8/10/5) — ahora se calculan desde los vehículos reales: por tipo (`stat-type-*`) y por duración de estacionamiento (`stat-dur-*`) usando `park_start_time`/`first_seen`.
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 

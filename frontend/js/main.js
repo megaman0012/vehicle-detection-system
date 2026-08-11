@@ -53,6 +53,8 @@ function loadStats() {
         setStat('stat-vehicles-today', vehiclesToday);
         setStat('stat-parked-vehicles', parked);
         setStat('stat-plates-read', platesRead);
+
+        renderParkingStats(vehicles);
     }).catch(function(err) {
         console.error('Failed to load vehicles:', err);
     });
@@ -70,6 +72,37 @@ function setStat(id, value) {
     if (el) {
         el.textContent = value;
     }
+}
+
+function renderParkingStats(vehicles) {
+    const types = { car: 0, motorcycle: 0, truck: 0, bus: 0 };
+    const durations = { under1h: 0, between: 0, over4h: 0 };
+    const now = Date.now();
+
+    (vehicles || []).forEach(function(v) {
+        if (types[v.vehicle_type] !== undefined) {
+            types[v.vehicle_type]++;
+        }
+
+        const start = v.park_start_time ? new Date(v.park_start_time).getTime() : new Date(v.first_seen).getTime();
+        if (isNaN(start)) return;
+        const hours = (now - start) / 3600000;
+        if (hours < 1) {
+            durations.under1h++;
+        } else if (hours <= 4) {
+            durations.between++;
+        } else {
+            durations.over4h++;
+        }
+    });
+
+    setStat('stat-type-car', types.car);
+    setStat('stat-type-motorcycle', types.motorcycle);
+    setStat('stat-type-truck', types.truck);
+    setStat('stat-type-bus', types.bus);
+    setStat('stat-dur-under1h', durations.under1h);
+    setStat('stat-dur-1to4h', durations.between);
+    setStat('stat-dur-over4h', durations.over4h);
 }
 
 function loadCameras() {
