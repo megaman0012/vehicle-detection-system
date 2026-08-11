@@ -2,25 +2,12 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Auth guard: require a valid session before rendering
-    if (!API.requireAuth()) {
+    if (!Common.requireAuth()) {
         return;
     }
 
-    // Set up logout
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            API.logout();
-        });
-    }
-
-    // Show current user name
-    const user = API.getStoredUser();
-    const userFullName = document.getElementById('userFullName');
-    if (userFullName) {
-        userFullName.innerHTML = '<i class="fas fa-user me-2"></i>' + (user && user.full_name ? user.full_name : 'Administrador');
-    }
+    // Sidebar, logout, user name and active page
+    Common.initSidebar('events');
 
     // Initialize events page functionality
     initializeEventsPage();
@@ -137,7 +124,7 @@ function loadEvents() {
                 <tr>
                     <td colspan="6" class="text-center py-4">
                         <i class="fas fa-exclamation-triangle fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Error al cargar los eventos: ${escapeHtml(err.message || err)}</p>
+                        <p class="text-muted">Error al cargar los eventos: ${Common.escapeHtml(err.message || err)}</p>
                     </td>
                 </tr>
             `;
@@ -167,7 +154,7 @@ function formatEventForDataTable(event) {
     const style = EVENT_TYPE_STYLES[event.event_type] || { icon: 'fas fa-bell', color: 'secondary', text: event.event_type };
     const typeBadge = `<span class="badge bg-${style.color}">${style.text}</span>`;
 
-    const plateDisplay = event.license_plate ? `<span class="badge bg-info">${escapeHtml(event.license_plate)}</span>` : '-';
+    const plateDisplay = event.license_plate ? `<span class="badge bg-info">${Common.escapeHtml(event.license_plate)}</span>` : '-';
 
     const actions = `
         <div class="btn-group btn-group-sm">
@@ -228,44 +215,11 @@ function populateEventsTable(events) {
     });
 }
 
-function escapeHtml(value) {
-    if (value === undefined || value === null) return '';
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-    notification.style.zIndex = '1050';
-    notification.innerHTML = `
-        <i class="fas fa-info-circle me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-
-    if (type === 'success') {
-        notification.querySelector('i').className = 'fas fa-check-circle me-2';
-    } else if (type === 'danger') {
-        notification.querySelector('i').className = 'fas fa-exclamation-triangle me-2';
-    } else if (type === 'warning') {
-        notification.querySelector('i').className = 'fas fa-exclamation-circle me-2';
-    }
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
+// Utilities (escapeHtml and showNotification are provided by js/common.js)
 
 // Export functionality
 document.getElementById('exportBtn').addEventListener('click', function() {
-    showNotification('Funcionalidad de exportación en desarrollo', 'info');
+    Common.showNotification('Funcionalidad de exportación en desarrollo', 'info');
 });
 
 // Refresh button functionality
@@ -273,6 +227,6 @@ document.addEventListener('click', function(e) {
     if (e.target.closest('.btn-refresh')) {
         e.preventDefault();
         loadEvents();
-        showNotification('Eventos actualizados', 'success');
+        Common.showNotification('Eventos actualizados', 'success');
     }
 });

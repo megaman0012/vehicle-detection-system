@@ -298,6 +298,17 @@ Trabajo **paso a paso**: cada paso se documenta aquí y se sube a Git con un com
 - **Paso 8 — Eventos**: exportar, filtro dinámico por cámara, ver detalles.
 - **Paso 9 — Documentación final**: README + historial + resumen.
 
+### Paso 1 completado ✅ (commit `e6dfe6f`)
+Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
+
+### Paso 2 completado ✅ (infraestructura frontend)
+- Creado `frontend/js/common.js`: `Common.requireAuth()`, `Common.initSidebar(activePage)` (toggle, logout, nombre de usuario, resaltado del menú), `Common.showNotification()`, `Common.escapeHtml()`, `Common.formatDateTime()`, `Common.formatDate()`, `Common.formatDuration()`.
+- `main.js` y `events.js` refactorizados para usar `Common` (se eliminaron funciones duplicadas `escapeHtml`/`showNotification`).
+- Sidebar de `index.html` y `events.html` ahora apunta a páginas reales: `pages/cameras.html`, `pages/parking.html`, `pages/events.html`, `pages/reports.html`, `pages/settings.html`, `pages/users.html` (con atributo `data-page`).
+- Fix de HTML inválido en `events.html:64` (`data-bs-toggle="aria-expanded="false"` → `data-bs-toggle="dropdown" aria-expanded="false"`).
+- Creados skeletons de las 5 páginas nuevas + sus JS (`cameras.js`, `parking.js`, `reports.js`, `settings.js`, `users.js`).
+- Sintaxis verificada con `node --check` en todos los JS.
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 

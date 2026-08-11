@@ -21,25 +21,25 @@
                 <i class="fas fa-car-mechanical"></i> Sistema de Detección
             </div>
             <div class="list-group list-group-flush my-3">
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="dashboard">
                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                 </a>
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="cameras.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="cameras">
                     <i class="fas fa-video me-2"></i>Cámaras
                 </a>
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="parking.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="parking">
                     <i class="fas fa-parking me-2"></i>Estacionamiento
                 </a>
-                <a href="events.html" class="list-group-item list-group-item-action bg-transparent second-text active">
+                <a href="events.html" class="list-group-item list-group-item-action bg-transparent second-text active" data-page="events">
                     <i class="fas fa-list me-2"></i>Historial de Eventos
                 </a>
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="reports.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="reports">
                     <i class="fas fa-file-alt me-2"></i>Reportes
                 </a>
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="settings.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="settings">
                     <i class="fas fa-cog me-2"></i>Configuración
                 </a>
-                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text">
+                <a href="users.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="users">
                     <i class="fas fa-user-shield me-2"></i>Usuarios
                 </a>
             </div>
@@ -61,7 +61,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="aria-expanded="false">
+                            <a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user me-1"></i> Administrador
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -188,6 +188,8 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <!-- API client -->
     <script src="../js/api.js"></script>
+    <!-- Shared utilities -->
+    <script src="../js/common.js"></script>
     <!-- Custom JS -->
     <script src="../js/events.js"></script>
 </body>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - Sistema de Detección de Vehículos</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-text fs-4">
+                <i class="fas fa-car-mechanical"></i> Sistema de Detección
+            </div>
+            <div class="list-group list-group-flush my-3">
+                <a href="../index.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="cameras.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="cameras">
+                    <i class="fas fa-video me-2"></i>Cámaras
+                </a>
+                <a href="parking.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="parking">
+                    <i class="fas fa-parking me-2"></i>Estacionamiento
+                </a>
+                <a href="events.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="events">
+                    <i class="fas fa-list me-2"></i>Historial de Eventos
+                </a>
+                <a href="reports.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="reports">
+                    <i class="fas fa-file-alt me-2"></i>Reportes
+                </a>
+                <a href="settings.html" class="list-group-item list-group-item-action bg-transparent second-text" data-page="settings">
+                    <i class="fas fa-cog me-2"></i>Configuración
+                </a>
+                <a href="users.html" class="list-group-item list-group-item-action bg-transparent second-text active" data-page="users">
+                    <i class="fas fa-user-shield me-2"></i>Usuarios
+                </a>
+            </div>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-transparent py-4 px-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-align-left primary-text fs-4 me-3" id="menu-toggle"></i>
+                    <h2 class="fs-2 m-0">Gestión de Usuarios</h2>
+                </div>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle second-text fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i> Administrador
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#" id="userFullName"><i class="fas fa-user me-2"></i> Administrador</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Users Content -->
+            <div class="container-fluid px-4" id="users-content">
+                <div class="col-12 py-5 text-center text-muted">
+                    <i class="fas fa-user-shield fa-3x opacity-25 mb-3"></i>
+                    <p class="mb-0">Gestión de usuarios en construcción.</p>
+                </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- API client -->
+    <script src="../js/api.js"></script>
+    <!-- Shared utilities -->
+    <script src="../js/common.js"></script>
+    <!-- Custom JS -->
+    <script src="../js/users.js"></script>
+</body>
+</html>

@@ -2,51 +2,18 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Auth guard: require a valid session before rendering
-    if (!API.requireAuth()) {
+    if (!Common.requireAuth()) {
         return;
     }
 
-    // Toggle sidebar
-    const menuToggle = document.getElementById('menu-toggle');
-    const wrapper = document.getElementById('wrapper');
-
-    if (menuToggle && wrapper) {
-        menuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            wrapper.classList.toggle('toggled');
-        });
-    }
+    // Sidebar, logout, user name and active page
+    Common.initSidebar('dashboard');
 
     // Initialize tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-
-    // Initialize popovers
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    const popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
-
-    // Initialize zone management
-    initializeZoneManagement();
-
-    // Set up logout
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            API.logout();
-        });
-    }
-
-    // Show current user name
-    const user = API.getStoredUser();
-    const userFullName = document.getElementById('userFullName');
-    if (userFullName) {
-        userFullName.innerHTML = '<i class="fas fa-user me-2"></i>' + (user && user.full_name ? user.full_name : 'Administrador');
-    }
 
     // Load real data
     loadDashboard();
@@ -266,13 +233,13 @@ function setupZoneDrawing(cameraId) {
 
     document.getElementById('saveZoneBtn').addEventListener('click', function() {
         if (points.length < 3) {
-            showNotification('Se necesitan al menos 3 puntos para definir una zona', 'warning');
+            Common.showNotification('Se necesitan al menos 3 puntos para definir una zona', 'warning');
             return;
         }
 
         const coordinates = points.map(point => [Math.round(point.x), Math.round(point.y)]);
         console.log('Saving zone for camera', cameraId, 'with coordinates:', coordinates);
-        showNotification('Zona guardada correctamente', 'success');
+        Common.showNotification('Zona guardada correctamente', 'success');
 
         const zoneDrawingModal = bootstrap.Modal.getInstance(document.getElementById('zoneDrawingModal'));
         zoneDrawingModal.hide();
@@ -289,13 +256,13 @@ function drawPoint(x, y) {
 
 function editZone(zoneId) {
     console.log(`Editing zone ${zoneId}`);
-    showNotification(`Funcionalidad de edición de zona ${zoneId} en desarrollo`, 'info');
+    Common.showNotification(`Funcionalidad de edición de zona ${zoneId} en desarrollo`, 'info');
 }
 
 function deleteZone(zoneId) {
     if (confirm(`¿Está seguro de que desea eliminar la zona ${zoneId}?`)) {
         console.log(`Deleting zone ${zoneId}`);
-        showNotification(`Zona ${zoneId} eliminada correctamente`, 'success');
+        Common.showNotification(`Zona ${zoneId} eliminada correctamente`, 'success');
     }
 }
 
@@ -387,7 +354,7 @@ function renderCameras(cameras) {
                     <div class="position-relative">
                         <div class="camera-feed bg-dark min-vh-50 d-flex align-items-center justify-content-center text-white">
                             <i class="fas fa-video-slash fa-3x opacity-25"></i>
-                            <div>${escapeHtml(camera.name || camera.id)}</div>
+                            <div>${Common.escapeHtml(camera.name || camera.id)}</div>
                         </div>
                         <div class="camera-status position-absolute top-0 end-0 ${statusClass} p-2" data-camera-id="${camera.id}">
                             <small>${statusText}</small>
@@ -395,11 +362,11 @@ function renderCameras(cameras) {
                     </div>
                     <div class="camera-info p-3">
                         <div class="d-flex justify-content-between">
-                            <span>${escapeHtml(camera.location || camera.name || camera.id)}</span>
+                            <span>${Common.escapeHtml(camera.location || camera.name || camera.id)}</span>
                             <span class="badge ${camera.is_active ? 'bg-success' : 'bg-danger'}">${camera.is_active ? 'Activa' : 'Inactiva'}</span>
                         </div>
                         <div class="mt-2">
-                            <small class="text-muted">${escapeHtml(camera.rtsp_url || 'Sin stream configurado')}</small>
+                            <small class="text-muted">${Common.escapeHtml(camera.rtsp_url || 'Sin stream configurado')}</small>
                         </div>
                     </div>
                 </div>
@@ -460,7 +427,7 @@ function renderAlerts(events) {
         html += `
             <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="mb-1">${escapeHtml(description)}</h6>
+                    <h6 class="mb-1">${Common.escapeHtml(description)}</h6>
                     <p class="mb-0 text-small text-muted">${time}${plate}</p>
                 </div>
                 <span class="badge ${t.badge} rounded-pill">${t.text}</span>
@@ -493,38 +460,4 @@ function updateCameraFeeds() {
 }
 
 // ---- Utilities ----
-
-function escapeHtml(value) {
-    if (value === undefined || value === null) return '';
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-    notification.style.zIndex = '1050';
-    notification.innerHTML = `
-        <i class="fas fa-info-circle me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-
-    if (type === 'success') {
-        notification.querySelector('i').className = 'fas fa-check-circle me-2';
-    } else if (type === 'danger') {
-        notification.querySelector('i').className = 'fas fa-exclamation-triangle me-2';
-    } else if (type === 'warning') {
-        notification.querySelector('i').className = 'fas fa-exclamation-circle me-2';
-    }
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
+// escapeHtml() and showNotification() are provided by js/common.js (Common)
