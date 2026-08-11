@@ -329,6 +329,13 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
 - `js/reports.js`: estadísticas reales desde `/api/reports/stats?days=30` y descarga real de `/api/reports/{daily|weekly|monthly}?format=pdf|excel` (se genera el nombre del archivo según `Content-Disposition`).
 - Dashboard (`index.html` + `main.js`): eliminadas las estadísticas hardcodeadas (12/5/4/2, 8/10/5) — ahora se calculan desde los vehículos reales: por tipo (`stat-type-*`) y por duración de estacionamiento (`stat-dur-*`) usando `park_start_time`/`first_seen`.
 
+### Paso 6 completado ✅ (página Configuración)
+- `api.js`: CRUD de configuración (`createConfig`, `updateConfig`, `deleteConfig`, `initializeDefaultConfigs`) y WhatsApp (`getWhatsAppStatus`, `configureWhatsApp`, `testWhatsApp`, `sendWhatsAppMessage`).
+- `pages/settings.html`: 
+  - Tabla de **configuración del sistema** (clave, valor, descripción, editar/eliminar) + botón "Nueva Configuración" y "Inicializar Defaults". Modal con valor JSON (acepta números, strings, booleanos y arrays).
+  - Sección **WhatsApp**: estado actual, formulario de configuración (URL de Evolution, API Key, instancia), botón "Probar Conexión" y formulario para enviar mensaje de prueba.
+- `js/settings.js`: CRUD real contra `/api/config/` y control real de WhatsApp contra `/api/whatsapp/*` con estado visible.
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 

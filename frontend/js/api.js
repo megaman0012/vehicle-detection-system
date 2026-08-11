@@ -229,6 +229,38 @@ const API = (function() {
         return request('/api/config/');
     }
 
+    function createConfig(data) {
+        return request('/api/config/', { method: 'POST', body: data });
+    }
+
+    function updateConfig(configId, data) {
+        return request('/api/config/' + configId, { method: 'PUT', body: data });
+    }
+
+    function deleteConfig(configId) {
+        return request('/api/config/' + configId, { method: 'DELETE' });
+    }
+
+    function initializeDefaultConfigs() {
+        return request('/api/config/initialize-defaults', { method: 'POST', body: {} });
+    }
+
+    function getWhatsAppStatus() {
+        return request('/api/whatsapp/status');
+    }
+
+    function configureWhatsApp(data) {
+        return request('/api/whatsapp/configure', { method: 'POST', body: data });
+    }
+
+    function testWhatsApp() {
+        return request('/api/whatsapp/test', { method: 'POST', body: {} });
+    }
+
+    function sendWhatsAppMessage(data) {
+        return request('/api/whatsapp/send-message', { method: 'POST', body: data });
+    }
+
     function getUsers() {
         return request('/api/users/');
     }
@@ -308,6 +340,14 @@ const API = (function() {
         getSystemMetrics: getSystemMetrics,
         getStats: getStats,
         getConfigs: getConfigs,
+        createConfig: createConfig,
+        updateConfig: updateConfig,
+        deleteConfig: deleteConfig,
+        initializeDefaultConfigs: initializeDefaultConfigs,
+        getWhatsAppStatus: getWhatsAppStatus,
+        configureWhatsApp: configureWhatsApp,
+        testWhatsApp: testWhatsApp,
+        sendWhatsAppMessage: sendWhatsAppMessage,
         getUsers: getUsers,
         getCurrentUser: getCurrentUser,
         aiGetStatus: aiGetStatus,

@@ -74,13 +74,149 @@
 
             <!-- Settings Content -->
             <div class="container-fluid px-4" id="settings-content">
-                <div class="col-12 py-5 text-center text-muted">
-                    <i class="fas fa-cog fa-3x opacity-25 mb-3"></i>
-                    <p class="mb-0">Configuración en construcción.</p>
+                <!-- Configuración del sistema -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Configuración del Sistema</h5>
+                                <div>
+                                    <button class="btn btn-outline-secondary me-2" id="initDefaultsBtn">
+                                        <i class="fas fa-redo me-1"></i> Inicializar Defaults
+                                    </button>
+                                    <button class="btn btn-primary" id="newConfigBtn">
+                                        <i class="fas fa-plus me-1"></i> Nueva Configuración
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="configsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Clave</th>
+                                                <th>Valor</th>
+                                                <th>Descripción</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando configuración...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Notificaciones WhatsApp</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info" id="whatsappStatus">
+                                    <i class="fas fa-info-circle me-2"></i> Consultando estado...
+                                </div>
+                                <form id="whatsappConfigForm">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">URL de la API (Evolution)</label>
+                                            <input type="text" class="form-control" id="whatsappApiUrl" placeholder="https://evolution.local:8080">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">API Key</label>
+                                            <input type="text" class="form-control" id="whatsappApiKey" placeholder="Clave de la API de Evolution">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Nombre de Instancia</label>
+                                            <input type="text" class="form-control" id="whatsappInstance" placeholder="vehicle-detection">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mb-4">
+                                        <button type="submit" class="btn btn-primary" id="configureWhatsAppBtn">
+                                            <i class="fas fa-save me-1"></i> Guardar Configuración
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" id="testWhatsAppBtn">
+                                            <i class="fas fa-plug me-1"></i> Probar Conexión
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <hr>
+                                <h6 class="mb-3">Enviar Mensaje de Prueba</h6>
+                                <form id="whatsappSendForm">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Número de Teléfono</label>
+                                            <input type="text" class="form-control" id="whatsappPhone" placeholder="Ej: 584121234567">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mensaje</label>
+                                            <input type="text" class="form-control" id="whatsappMessage" placeholder="Mensaje de prueba desde Vehicle Detection System">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="submit" class="btn btn-success w-100" id="sendWhatsAppBtn">
+                                                <i class="fab fa-whatsapp me-1"></i> Enviar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- Config Modal -->
+    <div class="modal fade" id="configModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="configModalTitle">Nueva Configuración</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="configForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="configId">
+                        <div class="mb-3">
+                            <label for="configKey" class="form-label">Clave *</label>
+                            <input type="text" class="form-control" id="configKey" placeholder="Ej: parking_time_threshold" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="configValue" class="form-label">Valor *</label>
+                            <input type="text" class="form-control" id="configValue" placeholder="Ej: 300, 08:00, true, [\"584121234567\"]" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="configDescription" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="configDescription" rows="2"></textarea>
+                        </div>
+                        <div class="form-text">
+                            El valor se guarda como JSON. Ejemplos: <code>300</code>, <code>"08:00"</code>, <code>true</code>, <code>["584121234567"]</code>.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveConfigBtn">
+                            <i class="fas fa-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->
