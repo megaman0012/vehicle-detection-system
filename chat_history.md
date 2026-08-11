@@ -354,6 +354,27 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
   - Event delegation para las acciones de la tabla, tooltips reinicializados tras cada redraw de la DataTable.
 - Sintaxis verificada con `node --check`.
 
+### Paso 9 completado ✅ (Documentación final)
+- `README.md`: sección "Uso del Sistema" reescrita con las páginas reales del frontend (Panel Principal, Cámaras, Estacionamiento, Historial de Eventos, Reportes, Configuración del Sistema, Usuarios). La configuración de zonas de estacionamiento ahora referencia la página **Estacionamiento** (dibujo sobre canvas persistido en `/api/zones/`).
+- `DEVELOPMENT_SETUP_SUMMARY.md`: se añadió el estado del frontend conectado a la API (todas las páginas), los fixes de deadlock/Redis, y los próximos pasos actualizados.
+- `chat_history.md`: se documentó el Paso 8 (Eventos) y este cierre del plan.
+
+### 🎯 PLAN COMPLETADO — Frontend 100% conectado a la API
+El plan paso a paso quedó terminado: los 9 pasos fueron commitados de forma independiente.
+
+**Historial de commits de esta sesión:**
+- `e6dfe6f` Paso 1: baseline (limpieza + .gitignore)
+- `272b51b` Paso 2: infraestructura frontend (common.js, sidebar, skeletons)
+- `9da13e4` Paso 3: página Cámaras (CRUD + control IA)
+- `531a357` Paso 4: página Estacionamiento (zonas + vehículos)
+- `9ef9196` Paso 5: página Reportes + dashboard real
+- `aee2128` Paso 6: página Configuración + WhatsApp
+- `35eb1be` Paso 7: página Usuarios (CRUD admin)
+- `eb7aca3` Paso 8: página Eventos (filtro cámara, detalles, CSV, WhatsApp)
+- *(este commit)* Paso 9: documentación final
+
+**Pendientes fuera de este plan** (de sesiones anteriores): PaddleOCR (requiere `swig`, `gcc`, `make`), `systemctl enable --now docker`, y el spam de log "Failed to read frame" al terminar videos de prueba.
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 

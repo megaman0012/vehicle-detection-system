@@ -183,11 +183,12 @@ Para configurar sus cámaras Hikvision:
 
 Para definir zonas de estacionamiento:
 
-1. Acceder al panel de administración → Cámaras
-2. Hacer clic en el icono de dibujo (polígono) junto a la cámara deseada
-3. En el modal que aparece, dibujar el polígono que representa el área de estacionamiento
-4. Hacer clic en "Guardar Zona"
-5. Repetir para todas las zonas necesarias
+1. Acceder al panel → Estacionamiento
+2. En la tabla de zonas, hacer clic en "Dibujar" o "Nueva Zona"
+3. Seleccionar la cámara sobre la que se dibuja el área
+4. Hacer clic en el canvas para marcar los vértices del polígono que representa el área de estacionamiento
+5. Usar "Deshacer"/"Limpiar" si es necesario y luego "Guardar Zona" (los puntos se persisten en `/api/zones/`)
+6. Repetir para todas las zonas necesarias
 
 ### Uso del Sistema
 
@@ -200,33 +201,48 @@ El dashboard muestra:
 - Alertas recientes
 - Gráficos de tendencias
 
+Las estadísticas del dashboard se calculan desde los datos reales de vehículos (por tipo y por duración de estacionamiento), no son valores fijos.
+
+#### Cámaras
+
+Página de administración de cámaras (CRUD completo contra `/api/cameras/`):
+- Crear, editar y eliminar cámaras (nombre, ubicación, URL RTSP, credenciales, FPS, resolución, activa)
+- Control del servicio de IA por cámara: iniciar/detener el procesamiento (`/ai/api/detection/start` / `stop`)
+- Modal de "Estado IA" y refresco automático del estado de procesamiento
+
+#### Estacionamiento
+
+- **Vehículos estacionados**: lista en vivo de los vehículos detectados y estacionados (ID de seguimiento, tipo, placa, cámara, primera/última vista) con refresco automático
+- **Zonas de estacionamiento**: CRUD de zonas con dibujo de polígono sobre canvas, persistido en la API
+
 #### Historial de Eventos
 
 Accesible desde el menú lateral, permite:
 - Filtrar por tipo de evento (estacionamiento, placa detectada, cámara desconectada, etc.)
 - Filtrar por rango de fechas
-- Filtrar por cámara específica
+- Filtrar por cámara específica (el select se llena dinámicamente desde la API)
 - Búsqueda de texto en descripciones y placas
-- Exportar resultados a CSV o Excel
-- Ver detalles de cada evento
+- Exportar resultados a CSV
+- Ver detalles de cada evento (fecha, tipo, descripción, cámara, placa, metadatos)
 - Enviar notificaciones por WhatsApp para eventos específicos
 
 #### Gestión de Reportes
 
 Permite generar:
-- Reportes de eventos de estacionamiento (PDF/Excel)
-- Reportes resumidos del sistema (PDF)
-- Programar generación automática de reportes
-- Descargar reportes históricos
+- Reportes de eventos de estacionamiento (PDF/Excel) en formato diario, semanal o mensual
+- Las descargas son binarias autenticadas (blob) y el archivo se nombra según `Content-Disposition`
+- El dashboard de estadísticas muestra los datos reales desde `/api/reports/stats`
 
 #### Configuración del Sistema
 
 Incluye:
-- Gestión de usuarios y roles
-- Configuración de umbrales de detección
-- Configuración de notificaciones
-- Configuración de WhatsApp/Evolution API
-- Ajustes de rendimiento del sistema
+- CRUD de configuración del sistema (clave/valor JSON: números, strings, booleanos y arrays) con botón "Inicializar Defaults"
+- Configuración de WhatsApp/Evolution API: estado, URL de Evolution, API Key, instancia, prueba de conexión y envío de mensajes de prueba
+
+#### Usuarios
+
+- Gestión de usuarios y roles (admin/operator/user) contra `/api/users/`
+- Al editar un usuario no se permite cambiar la contraseña (el backend no la soporta por PUT); la creación de usuarios solicita contraseña
 
 ### API REST
 
