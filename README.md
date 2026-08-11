@@ -248,6 +248,43 @@ Incluye:
 - Gestión de usuarios y roles (admin/operator/user) contra `/api/users/`
 - Al editar un usuario no se permite cambiar la contraseña (el backend no la soporta por PUT); la creación de usuarios solicita contraseña
 
+#### Notificaciones WhatsApp
+
+El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-alojada que conecta tu número de WhatsApp vía código QR).
+
+**Cómo funciona:**
+1. El backend habla con Evolution API usando `api_url` + `api_key` + `instance_name` (`backend/services/whatsapp_service.py`).
+2. Los envíos son **manuales/por evento**: desde un evento del Historial (botón WhatsApp) o desde Configuración (mensaje de prueba). La alerta de estacionamiento formateada (`send_parking_alert`) también está disponible por API.
+
+**Configuración (2 pasos):**
+
+1. **Levanta/consigue una instancia de Evolution API** (puede ser en otro servidor): `evolution-api/evolution-api`, por ejemplo:
+   ```bash
+   docker run -d --name evolution --restart unless-stopped -p 8080:8080 \
+     -e AUTHENTICATION_API_KEY=tu-clave \
+     -e DATABASE_CONNECTION_URI=... \
+     -e DATABASE_SAVE_DATA_INSTANCE=true \
+     -e DATABASE_SAVE_DATA_NEW_MESSAGE=true \
+     -e DATABASE_SAVE_MESSAGE_UPDATE=true \
+     -e DATABASE_SAVE_CONTACTS_INSTANCE=true \
+     -e DATABASE_SAVE_CHATS=true \
+     -e DATABASE_SAVE_MESSAGES=true \
+     -e DATABASE_SAVE_MESSAGE_UPDATE=true \
+     -e DATABASE_SAVE_CONTACTS_INSTANCE=true \
+     -e DATABASE_SAVE_CHATS=true \
+     -e DATABASE_SAVE_MESSAGES=true \
+     atomikos/evolution-api
+   ```
+   Luego crea una instancia (nombre, p.ej. `vehicle-detection`), vincula tu número con el código QR y copia la API Key. La URL de la API es `http://IP-evolution:8080`.
+
+2. **Configúralo en el sistema:** Menú → Configuración → "Notificaciones WhatsApp" → ingresa `URL de la API (Evolution)`, `API Key` e `instancia` → "Guardar Configuración" → "Probar Conexión".
+
+**Prueba rápida:**
+- En Configuración: botón "Enviar mensaje de prueba" con tu número (formato con código de país, solo dígitos: ej. `584121234567`).
+- En Historial de Eventos: botón verde WhatsApp de cualquier evento → pide número → encola `POST /api/whatsapp/send-message`.
+
+**Nota:** la configuración de WhatsApp se guarda **en memoria** (singleton del backend), no en base de datos; se pierde al reiniciar el contenedor `backend`. Los mensajes se encolan en background (`BackgroundTasks`). Actualmente el envío es manual; no hay aún envío automático al detectar estacionamiento (las claves `whatsapp_enabled`/`default_whatsapp_numbers` existen en la BD pero aún no se leen para auto-notificar).
+
 ### API REST
 
 El sistema proporciona una API REST completa documentada en:

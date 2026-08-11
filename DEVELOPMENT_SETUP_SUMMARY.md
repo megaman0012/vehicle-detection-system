@@ -5,7 +5,7 @@
 - Servicio de IA: Dependencias principales instaladas (opencv, ultralytics) + **PaddleOCR 3.x habilitado y verificado**
 - **Docker habilitado y arrancando solo**: `systemctl enable --now docker`
 - **Imagen `ai_service` construida con el stack ML completo** (torch CPU + torchvision CPU + YOLOv8 + PaddleOCR) y **prueba end-to-end verificada dentro del contenedor** (detección → tracking → estacionamiento → reporte al backend)
-- Frontend: Servidor HTTP funcionando en puerto 8080
+- **Frontend en Docker en el puerto 4001** (host `4001` → contenedor `80`): se eligió un puerto no estándar para no chocar con otros servicios (Apache/nginx) en el servidor
 - **Frontend conectado a la API real** (páginas Cámaras, Estacionamiento, Eventos, Reportes, Configuración y Usuarios): ya no hay funciones mock, todo el CRUD e integraciones se ejecutan contra los endpoints del backend y del servicio de IA a través del proxy nginx (`/api/*` y `/ai/*`)
 
 ## 🛠️ MEJORAS REALIZADAS
@@ -63,7 +63,7 @@
 3. Ajustar `PARKING_TIME_THRESHOLD` (default 300s vs 30 min del README) si aplica
 
 ## 📍 ACCESO
-- Frontend: http://localhost:8080
+- Frontend: http://localhost:4001
 - Backend: Disponible para desarrollo en /backend
 - IA: Disponible para desarrollo en /ai
 

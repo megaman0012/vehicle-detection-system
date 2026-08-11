@@ -456,3 +456,25 @@ Se completaron las tareas pendientes de la sesión anterior: se habilitó Docker
 - Prueba end-to-end con cámara RTSP real (Hikvision) y placas legibles.
 - Ajustar `PARKING_TIME_THRESHOLD` a los tiempos reales de estacionamiento.
 - Evaluar `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True` para acelerar el primer arranque.
+
+---
+
+## Sesión: lunes, 11 de agosto de 2026 — Puerto 4001 y documentación de WhatsApp
+
+### Puerto del frontend cambiado a 4001
+- `docker-compose.yml`: mapeo del frontend de `"80:80"` a `"4001:80"`. El puerto **interno del contenedor sigue siendo 80**; solo cambia el expuesto en el host.
+- Motivo: evitar colisiones con otros servicios (Apache/nginx) que ya usen el puerto 80 al desplegar el proyecto en otro servidor. Si el destino ya ocupa el 4001, se cambia el lado host de una línea.
+- Verificado: `http://localhost:4001/` responde 200 y el puerto 80 queda libre.
+- Contenedor `frontend` recreado con `docker compose up -d frontend` (sin afectar al resto del stack).
+- Docs: `DEVELOPMENT_SETUP_SUMMARY.md` actualizado (acceso en `http://localhost:4001`).
+
+### Documentación de WhatsApp/Evolution API
+- Estado real: los envíos son **manuales** — desde un evento del Historial (botón WhatsApp) y desde Configuración (mensaje de prueba). No hay aún auto-envío al detectar estacionamiento (`whatsapp_enabled`/`default_whatsapp_numbers` existen en BD pero nadie los lee para notificar automáticamente).
+- La configuración (api_url, api_key, instance_name) vive en un singleton **en memoria** (`backend/routers/whatsapp.py:50`), no en la BD → se pierde al reiniciar el backend.
+- Los envíos se encolan con `BackgroundTasks`; el número se normaliza (solo dígitos, +1 implícito para números US de 10 dígitos) en `backend/services/whatsapp_service.py`.
+- README: nueva sección "Notificaciones WhatsApp" con arquitectura (Evolution API), cómo levantar una instancia de prueba con Docker, pasos de configuración desde la UI, prueba rápida y las limitaciones actuales (config en memoria, sin auto-envío).
+
+### Commits
+- (pendiente de commitear/pushear en esta sesión)
+
+*Actualizado: lunes, 11 de agosto de 2026*
