@@ -1,6 +1,25 @@
-version: '3.8'
-
 services:
+  # Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vehicle_detection
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vehicle_detection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vehicle_network
+    restart: unless-stopped
+
   # Backend API (FastAPI)
   backend:
     build:
@@ -9,7 +28,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/vehicle_detection
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/vehicle_detection
       - REDIS_URL=redis://redis:6379
       - SECRET_KEY=your-secret-key-here-change-in-production
       - ALGORITHM=HS256
@@ -18,7 +37,10 @@ services:
       - ./backend:/app
       - ./backend/logs:/app/logs
     depends_on:
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - vehicle_network
     restart: unless-stopped
@@ -77,3 +99,4 @@ networks:
 
 volumes:
   redis_data:
+  postgres_data:

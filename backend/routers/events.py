@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
+from uuid import UUID
 
 from database import get_db
 from models.event import Event, EventType
@@ -44,7 +45,7 @@ async def read_events(
 
 @router.get("/{event_id}", response_model=EventResponse)
 async def read_event(
-    event_id: int,
+    event_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -123,7 +124,7 @@ async def create_event(
 
 @router.put("/{event_id}", response_model=EventResponse)
 async def update_event(
-    event_id: int,
+    event_id: UUID,
     event: EventUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -154,7 +155,7 @@ async def update_event(
 
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_event(
-    event_id: int,
+    event_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

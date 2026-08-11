@@ -14,7 +14,6 @@ router = APIRouter()
 async def read_configs(
     skip: int = 0,
     limit: int = 100,
-    active_only: bool = True,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -25,11 +24,7 @@ async def read_configs(
             detail="Not enough permissions"
         )
     
-    query = db.query(SystemConfig)
-    if active_only:
-        query = query.filter(SystemConfig.is_active == True)
-    
-    configs = query.offset(skip).limit(limit).all()
+    configs = db.query(SystemConfig).offset(skip).limit(limit).all()
     return configs
 
 @router.get("/{config_id}", response_model=SystemConfigResponse)
@@ -170,33 +165,28 @@ async def initialize_default_configs(
     default_configs = [
         {
             "key": "parking_time_threshold",
-            "value": "300",  # 5 minutes in seconds
-            "description": "Time in seconds to consider a vehicle as parked",
-            "data_type": "integer"
+            "value": 300,  # 5 minutes in seconds
+            "description": "Time in seconds to consider a vehicle as parked"
         },
         {
             "key": "working_hours_start",
             "value": "08:00",
-            "description": "Start of working hours (HH:MM format)",
-            "data_type": "string"
+            "description": "Start of working hours (HH:MM format)"
         },
         {
             "key": "working_hours_end",
             "value": "18:00",
-            "description": "End of working hours (HH:MM format)",
-            "data_type": "string"
+            "description": "End of working hours (HH:MM format)"
         },
         {
             "key": "whatsapp_enabled",
-            "value": "true",
-            "description": "Enable WhatsApp notifications",
-            "data_type": "boolean"
+            "value": True,
+            "description": "Enable WhatsApp notifications"
         },
         {
             "key": "default_whatsapp_numbers",
-            "value": "[]",
-            "description": "Default WhatsApp numbers for notifications",
-            "data_type": "json"
+            "value": [],
+            "description": "Default WhatsApp numbers for notifications"
         }
     ]
     

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 from database import get_db
 from models.camera import Camera
@@ -27,7 +28,7 @@ async def read_cameras(
 
 @router.get("/{camera_id}", response_model=CameraResponse)
 async def read_camera(
-    camera_id: int,
+    camera_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -66,7 +67,7 @@ async def create_camera(
 
 @router.put("/{camera_id}", response_model=CameraResponse)
 async def update_camera(
-    camera_id: int,
+    camera_id: UUID,
     camera: CameraUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -97,7 +98,7 @@ async def update_camera(
 
 @router.delete("/{camera_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_camera(
-    camera_id: int,
+    camera_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

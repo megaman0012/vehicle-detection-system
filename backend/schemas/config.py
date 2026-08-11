@@ -1,13 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Any
 from datetime import datetime
+from uuid import UUID
 
 class SystemConfigBase(BaseModel):
     key: str
     value: Optional[Any] = None
     description: Optional[str] = None
-    is_active: Optional[bool] = True
-    data_type: Optional[str] = "string"
 
 class SystemConfigCreate(SystemConfigBase):
     pass
@@ -15,17 +14,12 @@ class SystemConfigCreate(SystemConfigBase):
 class SystemConfigUpdate(BaseModel):
     value: Optional[Any] = None
     description: Optional[str] = None
-    is_active: Optional[bool] = None
-    data_type: Optional[str] = None
 
 class SystemConfigInDBBase(SystemConfigBase):
-    id: int
-    is_active: bool
-    created_at: datetime
+    id: UUID
     updated_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SystemConfigInDB(SystemConfigInDBBase):
     pass

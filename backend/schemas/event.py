@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Dict, Any
 from datetime import datetime
+from uuid import UUID
 from enum import Enum
 
 class EventType(str, Enum):
@@ -13,30 +14,30 @@ class EventType(str, Enum):
 class EventBase(BaseModel):
     event_type: EventType
     description: Optional[str] = None
+    license_plate: Optional[str] = None
 
 class EventCreate(EventBase):
-    vehicle_id: Optional[int] = None
-    zone_id: Optional[int] = None
-    camera_id: int
-    user_id: Optional[int] = None
-    metadata: Optional[Dict[Any, Any]] = None
+    vehicle_id: Optional[UUID] = None
+    zone_id: Optional[UUID] = None
+    camera_id: UUID
+    meta: Optional[Dict[Any, Any]] = None
 
 class EventUpdate(BaseModel):
     event_type: Optional[EventType] = None
     description: Optional[str] = None
-    metadata: Optional[Dict[Any, Any]] = None
+    license_plate: Optional[str] = None
+    meta: Optional[Dict[Any, Any]] = None
 
 class EventInDBBase(EventBase):
-    id: int
+    id: UUID
     timestamp: datetime
-    vehicle_id: Optional[int] = None
-    zone_id: Optional[int] = None
-    camera_id: int
-    user_id: Optional[int] = None
-    metadata: Optional[Dict[Any, Any]] = None
+    vehicle_id: Optional[UUID] = None
+    zone_id: Optional[UUID] = None
+    camera_id: Optional[UUID] = None
+    meta: Optional[Dict[Any, Any]] = None
+    created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EventInDB(EventInDBBase):
     pass

@@ -1,0 +1,251 @@
+// API client for Vehicle Detection System
+// Talks to the backend through the nginx proxy (/api -> backend:8000).
+
+const API = (function() {
+    const TOKEN_KEY = 'vds_access_token';
+    const REFRESH_KEY = 'vds_refresh_token';
+    const USER_KEY = 'vds_user';
+
+    function getToken() {
+        return localStorage.getItem(TOKEN_KEY);
+    }
+
+    function getRefreshToken() {
+        return localStorage.getItem(REFRESH_KEY);
+    }
+
+    function getStoredUser() {
+        const raw = localStorage.getItem(USER_KEY);
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function storeSession(tokens, user) {
+        localStorage.setItem(TOKEN_KEY, tokens.access_token);
+        localStorage.setItem(REFRESH_KEY, tokens.refresh_token);
+        if (user) {
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }
+    }
+
+    function clearSession() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(REFRESH_KEY);
+        localStorage.removeItem(USER_KEY);
+    }
+
+    function redirectToLogin() {
+        const current = window.location.pathname;
+        if (!current.endsWith('login.html')) {
+            window.location.href = 'login.html';
+        }
+    }
+
+    async function request(path, options) {
+        options = options || {};
+        const headers = Object.assign({}, options.headers || {});
+        const token = getToken();
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        if (options.body && typeof options.body !== 'string' && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(options.body);
+        }
+
+        const resp = await fetch(path, Object.assign({}, options, { headers: headers }));
+
+        if (resp.status === 401) {
+            // Try to refresh once
+            const refreshed = await tryRefresh();
+            if (!refreshed) {
+                clearSession();
+                redirectToLogin();
+                throw new Error('No autenticado');
+            }
+            // Retry original request with new token
+            headers['Authorization'] = 'Bearer ' + getToken();
+            const retryResp = await fetch(path, Object.assign({}, options, { headers: headers }));
+            return parseResponse(retryResp);
+        }
+
+        return parseResponse(resp);
+    }
+
+    async function tryRefresh() {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) return false;
+        try {
+            const resp = await fetch('/api/auth/refresh?refresh_token=' + encodeURIComponent(refreshToken), {
+                method: 'POST'
+            });
+            if (!resp.ok) return false;
+            const data = await resp.json();
+            localStorage.setItem(TOKEN_KEY, data.access_token);
+            localStorage.setItem(REFRESH_KEY, data.refresh_token);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function parseResponse(resp) {
+        if (resp.status === 204) {
+            return null;
+        }
+        const contentType = resp.headers.get('Content-Type') || '';
+        const isJson = contentType.indexOf('application/json') !== -1;
+        const body = isJson ? await resp.json() : await resp.text();
+
+        if (!resp.ok) {
+            const detail = body && body.detail ? body.detail : 'Error de servidor';
+            const error = new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+            error.status = resp.status;
+            throw error;
+        }
+        return body;
+    }
+
+    function qs(params) {
+        const search = new URLSearchParams();
+        Object.keys(params).forEach(function(key) {
+            const value = params[key];
+            if (value !== undefined && value !== null && value !== '') {
+                search.append(key, value);
+            }
+        });
+        const s = search.toString();
+        return s ? '?' + s : '';
+    }
+
+    async function login(username, password) {
+        const form = new URLSearchParams();
+        form.append('username', username);
+        form.append('password', password);
+
+        const resp = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: form.toString()
+        });
+
+        const data = await parseResponse(resp);
+        storeSession(data, null);
+
+        // Load current user profile
+        try {
+            const me = await request('/api/auth/me');
+            localStorage.setItem(USER_KEY, JSON.stringify(me));
+        } catch (e) {
+            // Non-fatal: token already stored
+        }
+        return data;
+    }
+
+    function logout() {
+        clearSession();
+        window.location.href = 'login.html';
+    }
+
+    function isAuthenticated() {
+        return !!getToken();
+    }
+
+    function requireAuth() {
+        if (!isAuthenticated()) {
+            redirectToLogin();
+            return false;
+        }
+        return true;
+    }
+
+    // ---- Endpoints ----
+
+    function getCameras(params) {
+        return request('/api/cameras/' + qs(params || {}));
+    }
+
+    function createCamera(data) {
+        return request('/api/cameras/', { method: 'POST', body: data });
+    }
+
+    function updateCamera(cameraId, data) {
+        return request('/api/cameras/' + cameraId, { method: 'PUT', body: data });
+    }
+
+    function deleteCamera(cameraId) {
+        return request('/api/cameras/' + cameraId, { method: 'DELETE' });
+    }
+
+    function getVehicles(params) {
+        return request('/api/vehicles/' + qs(params || {}));
+    }
+
+    function getParkedVehicles() {
+        return request('/api/vehicles/parked/current');
+    }
+
+    function getEvents(params) {
+        return request('/api/events/' + qs(params || {}));
+    }
+
+    function getRecentEvents(hours) {
+        return request('/api/events/recent' + qs({ hours: hours || 24 }));
+    }
+
+    function getZones() {
+        return request('/api/zones/');
+    }
+
+    function getSystemStatus() {
+        return request('/api/system/status');
+    }
+
+    function getSystemMetrics() {
+        return request('/api/system/metrics');
+    }
+
+    function getStats(days) {
+        return request('/api/reports/stats' + qs({ days: days || 30 }));
+    }
+
+    function getConfigs() {
+        return request('/api/config/');
+    }
+
+    function getUsers() {
+        return request('/api/users/');
+    }
+
+    function getCurrentUser() {
+        return request('/api/auth/me');
+    }
+
+    return {
+        getToken: getToken,
+        getStoredUser: getStoredUser,
+        login: login,
+        logout: logout,
+        isAuthenticated: isAuthenticated,
+        requireAuth: requireAuth,
+        getCameras: getCameras,
+        createCamera: createCamera,
+        updateCamera: updateCamera,
+        deleteCamera: deleteCamera,
+        getVehicles: getVehicles,
+        getParkedVehicles: getParkedVehicles,
+        getEvents: getEvents,
+        getRecentEvents: getRecentEvents,
+        getZones: getZones,
+        getSystemStatus: getSystemStatus,
+        getSystemMetrics: getSystemMetrics,
+        getStats: getStats,
+        getConfigs: getConfigs,
+        getUsers: getUsers,
+        getCurrentUser: getCurrentUser
+    };
+})();

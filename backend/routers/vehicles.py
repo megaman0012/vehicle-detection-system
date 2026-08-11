@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
+from uuid import UUID
 
 from database import get_db
 from models.vehicle import DetectedVehicle, VehicleType
+from models.camera import Camera
 from models.user import User
 from schemas.vehicle import DetectedVehicleCreate, DetectedVehicleUpdate, DetectedVehicleResponse
 from utils.auth import get_current_active_user
@@ -36,9 +38,36 @@ async def read_vehicles(
     vehicles = query.offset(skip).limit(limit).all()
     return vehicles
 
+@router.post("/", response_model=DetectedVehicleResponse, status_code=status.HTTP_201_CREATED)
+async def create_vehicle(
+    vehicle: DetectedVehicleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Create a new detected vehicle"""
+    if current_user.role not in ["admin", "operator"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    
+    # Verify camera exists
+    camera = db.query(Camera).filter(Camera.id == vehicle.camera_id).first()
+    if camera is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Camera not found"
+        )
+    
+    db_vehicle = DetectedVehicle(**vehicle.dict())
+    db.add(db_vehicle)
+    db.commit()
+    db.refresh(db_vehicle)
+    return db_vehicle
+
 @router.get("/{vehicle_id}", response_model=DetectedVehicleResponse)
 async def read_vehicle(
-    vehicle_id: int,
+    vehicle_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -60,7 +89,7 @@ async def read_vehicle(
 
 @router.put("/{vehicle_id}", response_model=DetectedVehicleResponse)
 async def update_vehicle(
-    vehicle_id: int,
+    vehicle_id: UUID,
     vehicle: DetectedVehicleUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)

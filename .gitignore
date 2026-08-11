@@ -22,3 +22,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated / test files
+*.bak
+*.mp4
+test.txt
+test2.txt
+prueba.txt

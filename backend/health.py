@@ -25,7 +25,7 @@ def check_redis_connection():
     try:
         import redis
         from config import settings
-        r = redis.from_string(settings.REDIS_URL)
+        r = redis.Redis.from_url(settings.REDIS_URL)
         r.ping()
         return "connected"
     except Exception:

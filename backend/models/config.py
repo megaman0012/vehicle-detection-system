@@ -1,15 +1,14 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
+from sqlalchemy import Column, String, DateTime, Text
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
+import uuid
 from models.base import Base
 
 class SystemConfig(Base):
-    __tablename__ = "system_configs"
+    __tablename__ = "system_config"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     key = Column(String, unique=True, nullable=False, index=True)
-    value = Column(Text)
+    value = Column(JSONB, nullable=False)
     description = Column(Text)
-    is_active = Column(Boolean, default=True)
-    data_type = Column(String, default="string")  # string, integer, boolean, json
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -3,6 +3,6 @@ from services.websocket_service import manager, websocket_endpoint
 
 router = APIRouter()
 
-@router.websocket("/ws/{client_id}")
+@router.websocket("/{client_id}")
 async def websocket_endpoint_route(websocket: WebSocket, client_id: int):
     await websocket_endpoint(websocket)

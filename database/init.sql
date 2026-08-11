@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS cameras (
     fps INTEGER DEFAULT 30,
     width INTEGER DEFAULT 1920,
     height INTEGER DEFAULT 1080,
+    owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -89,6 +90,19 @@ CREATE TABLE IF NOT EXISTS system_config (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Audit logs table
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    resource_type VARCHAR(50) NOT NULL,
+    resource_id UUID,
+    details JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
@@ -116,7 +130,7 @@ BEGIN
         VALUES (
             'admin@vehicle-detection.com',
             'admin',
-            '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', -- hash of 'admin123'
+            '$2b$12$NJpbReEV3jCQWL29LSt4zO/aTHQ399XiA4NM/IFAxIdcYqUk.pNcO', -- hash of 'admin123'
             'Administrador del Sistema',
             'admin',
             TRUE

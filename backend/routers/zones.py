@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from uuid import UUID
 
 from database import get_db
 from models.zone import Zone
+from models.camera import Camera
+from models.user import User
 from schemas.zone import ZoneCreate, ZoneUpdate, ZoneResponse
 from utils.auth import get_current_active_user
 
@@ -26,7 +29,7 @@ async def read_zones(
 
 @router.get("/{zone_id}", response_model=ZoneResponse)
 async def read_zone(
-    zone_id: int,
+    zone_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -75,7 +78,7 @@ async def create_zone(
 
 @router.put("/{zone_id}", response_model=ZoneResponse)
 async def update_zone(
-    zone_id: int,
+    zone_id: UUID,
     zone: ZoneUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -106,7 +109,7 @@ async def update_zone(
 
 @router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_zone(
-    zone_id: int,
+    zone_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

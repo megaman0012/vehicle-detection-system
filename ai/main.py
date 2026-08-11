@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 from app.routers import detection, health
+from services.ai_service import ai_service
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +16,12 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Vehicle Detection System AI Service...")
-    # Initialize AI models here in a real implementation
+    ai_service.is_running = True
+    logger.info("AI service running: %s", ai_service.get_status())
     yield
     # Shutdown
     logger.info("Shutting down Vehicle Detection System AI Service...")
+    ai_service.shutdown()
 
 # Create FastAPI app
 app = FastAPI(

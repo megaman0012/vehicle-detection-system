@@ -5,7 +5,7 @@ Handles generation of PDF and Excel reports
 
 import io
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 
 # For PDF generation
@@ -29,9 +29,81 @@ except ImportError:
     OPENPYXL_AVAILABLE = False
 
 class ReportService:
-    def __init__(self):
+    def __init__(self, db: Optional[Any] = None):
+        self.db = db
         self.reports_dir = "reports"
         os.makedirs(self.reports_dir, exist_ok=True)
+
+    def _query_events(self, start: datetime, end: datetime) -> List[Dict[str, Any]]:
+        """Query events between two datetimes and return them as dicts for reports"""
+        from models.event import Event
+        from models.camera import Camera
+
+        rows = (
+            self.db.query(Event, Camera.name)
+            .outerjoin(Camera, Event.camera_id == Camera.id)
+            .filter(Event.timestamp >= start, Event.timestamp < end)
+            .all()
+        )
+        result = []
+        for event, camera_name in rows:
+            result.append({
+                "timestamp": event.timestamp,
+                "event_type": event.event_type,
+                "description": event.description,
+                "camera_name": camera_name or "",
+                "license_plate": event.license_plate or "-"
+            })
+        return result
+
+    def generate_daily_report(self, date) -> List[Dict[str, Any]]:
+        """Generate daily report data for the given date"""
+        if isinstance(date, str):
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        start = datetime.combine(date, datetime.min.time())
+        end = start + timedelta(days=1)
+        return self._query_events(start, end)
+
+    def generate_weekly_report(self, start_date) -> List[Dict[str, Any]]:
+        """Generate weekly report data starting from the given date"""
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+        start = datetime.combine(start_date, datetime.min.time())
+        end = start + timedelta(days=7)
+        return self._query_events(start, end)
+
+    def generate_monthly_report(self, year: int, month: int) -> List[Dict[str, Any]]:
+        """Generate monthly report data for the given year and month"""
+        start = datetime(year, month, 1)
+        end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+        return self._query_events(start, end)
+
+    def generate_pdf_report(self, report_data: List[Dict[str, Any]], period_type: str = "daily") -> io.BytesIO:
+        """Generate a PDF report and return it as a BytesIO buffer"""
+        return io.BytesIO(self.generate_parking_report_pdf(report_data))
+
+    def generate_excel_report(self, report_data: List[Dict[str, Any]], period_type: str = "daily") -> io.BytesIO:
+        """Generate an Excel report and return it as a BytesIO buffer"""
+        return io.BytesIO(self.generate_parking_report_excel(report_data))
+
+    def get_statistics(self, days: int = 30) -> Dict[str, Any]:
+        """Get system statistics for the last N days"""
+        from models.event import Event
+        from models.vehicle import DetectedVehicle
+
+        since = datetime.utcnow() - timedelta(days=days)
+        total_events = self.db.query(Event).count()
+        recent_events = self.db.query(Event).filter(Event.timestamp >= since).count()
+        total_vehicles = self.db.query(DetectedVehicle).count()
+        parked_vehicles = self.db.query(DetectedVehicle).filter(DetectedVehicle.is_parked.is_(True)).count()
+
+        return {
+            "total_events": total_events,
+            f"events_last_{days}_days": recent_events,
+            "total_vehicles_detected": total_vehicles,
+            "currently_parked": parked_vehicles,
+            "generated_at": datetime.utcnow().isoformat()
+        }
     
     def generate_parking_report_pdf(self, events: List[Dict[str, Any]], 
                                   filters: Dict[str, Any] = None) -> bytes:

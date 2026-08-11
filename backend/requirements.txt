@@ -4,18 +4,23 @@ uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-dotenv==1.0.0
 sqlalchemy==2.0.23
 alembic==1.13.1
 psycopg2-binary==2.9.9
 redis==5.0.1
+httpx==0.25.2
+psutil==5.9.8
+reportlab==4.1.0
+openpyxl==3.1.2
 pydantic==2.5.0
 pydantic-settings==2.0.3
 email-validator==2.1.1
 
 # Core AI/ML Dependencies (minimal set for testing)
 opencv-python==4.8.1.78
-# numpy==1.24.3  # Using system numpy, let pip handle version
+numpy>=1.26,<2
 
 # For development (optional)
 # pytest==7.4.0

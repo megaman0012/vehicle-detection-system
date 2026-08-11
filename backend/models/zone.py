@@ -1,18 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
-import json
+import uuid
 from models.base import Base
 
 class Zone(Base):
-    __tablename__ = "zones"
+    __tablename__ = "parking_zones"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    camera_id = Column(UUID(as_uuid=True), ForeignKey("cameras.id"), nullable=True)
     name = Column(String, nullable=False)
-    description = Column(Text)
     # Store polygon coordinates as JSON: [[x1,y1], [x2,y2], ...]
-    coordinates = Column(Text, nullable=False)  # JSON string of polygon points
-    camera_id = Column(Integer, ForeignKey("cameras.id"), nullable=False)
+    coordinates = Column(JSONB, nullable=False, default=list)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -20,13 +20,3 @@ class Zone(Base):
     # Relationships
     camera = relationship("Camera", back_populates="zones")
     events = relationship("Event", back_populates="zone")
-
-    def get_coordinates(self):
-        """Return coordinates as list of lists"""
-        import json
-        return json.loads(self.coordinates) if self.coordinates else []
-
-    def set_coordinates(self, coords):
-        """Set coordinates from list of lists"""
-        import json
-        self.coordinates = json.dumps(coords)
