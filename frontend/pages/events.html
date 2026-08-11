@@ -120,10 +120,6 @@
                                                     <label class="form-label">Cámara</label>
                                                     <select class="form-select" id="cameraFilter">
                                                         <option value="">Todas las cámaras</option>
-                                                        <option value="1">Entrada Principal</option>
-                                                        <option value="2">Parqueo Norte</option>
-                                                        <option value="3">Parqueo Sur</option>
-                                                        <option value="4">Salida Principal</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -179,6 +175,24 @@
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- Event Details Modal -->
+    <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="eventDetailsBody">
+                    <div class="text-center py-4 text-muted">Seleccione un evento para ver sus detalles.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->

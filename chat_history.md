@@ -341,6 +341,19 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
 - `pages/users.html`: tabla de usuarios (usuario, nombre, email, rol, estado, fecha de creación, acciones) + modal crear/editar con validaciones (email, contraseña mínima 8 caracteres, roles admin/operator/user, activo/inactivo).
 - `js/users.js`: CRUD real contra `/api/users/`. Al editar se oculta el campo contraseña (el backend no soporta cambio de password por PUT).
 
+### Paso 8 completado ✅ (página Eventos)
+- `pages/events.html`:
+  - Filtro de cámara (`#cameraFilter`) ahora es un select vacío que se **pobla dinámicamente** desde `/api/cameras/` (antes estaba hardcodeado).
+  - Nuevo modal `#eventDetailsModal` para ver el detalle completo de un evento.
+- `js/events.js`:
+  - `loadCameraOptions()`: carga las cámaras y construye un `cameraMap {id → name}`; la tabla ahora muestra el **nombre de la cámara** en lugar del UUID.
+  - Filtro por cámara **en el cliente** (el backend `GET /api/events/` no acepta `camera_id`).
+  - Botón "Ver detalles": modal con fecha, tipo, descripción, cámara, placa, IDs (evento/vehículo/zona) y metadatos crudos (`event.meta` formateado).
+  - Botón WhatsApp: pide el número por prompt y encola el envío vía `POST /api/whatsapp/send-message` con `{phone_number, message}` (payload validado contra `backend/routers/whatsapp.py`).
+  - **Exportación CSV real**: descarga `eventos_YYYY-MM-DD.csv` desde los datos visibles en la DataTable (antes mostraba "en desarrollo"), con escape CSV correcto.
+  - Event delegation para las acciones de la tabla, tooltips reinicializados tras cada redraw de la DataTable.
+- Sintaxis verificada con `node --check`.
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
