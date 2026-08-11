@@ -416,3 +416,43 @@ Activar el reconocimiento de placas real con PaddleOCR. Hasta ahora el AI servic
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
+
+---
+
+## Sesión: lunes, 10 de agosto de 2026 (continuación) — Stack ML en Docker + fixes de robustez
+
+### Resumen
+Se completaron las tareas pendientes de la sesión anterior: se habilitó Docker, se construyó la imagen `ai_service` con el stack ML completo (YOLOv8 + PaddleOCR), se verificó la detección real end-to-end dentro del contenedor y se corrigieron varios bugs que impedían la operación continua.
+
+### Problemas resueltos
+1. **Docker apagado y deshabilitado**: `systemctl enable --now docker` → queda activo y arranca solo tras reinicios.
+2. **`torchvision::nms does not exist` en el contenedor**: torch 2.4.0 se instalaba desde el índice CPU, pero `torchvision==0.19.0` se resolvía desde PyPI (wheel CUDA). Al correr YOLO, NMS fallaba. Fix: instalar `torch==2.4.0` + `torchvision==0.19.0` desde `--index-url https://download.pytorch.org/whl/cpu` en el `Dockerfile`.
+3. **Contexto de build gigante**: no existía `ai/.dockerignore`; el `.venv` de 1.3 GB se subía a cada build. Se creó `.dockerignore` (excluye `.venv/`, caches, modelos, logs, videos de prueba).
+4. **Backend caído mataba la detección**: `backend_client.login()` lanzaba excepción de red que se propagaba por `post_vehicle`/`post_event` y el `try/except` de `_process_frame_for_vehicles` descartaba el frame completo (detección perdida en silencio). Fix en `app/backend_client.py`: `login()` devuelve `None` en fallo y `_request` nunca lanza; además `_report_if_due` envuelve los envíos al backend en `try/except`.
+5. **`UniqueViolation` al reportar vehículos**: tras reiniciar el AI service, los track IDs se reusan (T-1, T-2...) y `POST /api/vehicles/` fallaba con `detected_vehicles_vehicle_id_key`. Fix en `backend/routers/vehicles.py`: upsert por `vehicle_id` + `camera_id`, gestionando `last_seen`, `park_start_time` y `total_park_time`.
+6. **Handler global de excepciones roto** (`backend/main.py`): devolvía un `dict` en vez de `JSONResponse` → `TypeError: 'dict' object is not callable` y respuestas 500 vacías. Fix: retorna `JSONResponse(status_code=500, content=...)`.
+7. **Umbral de estacionamiento ignorado**: los singletons `parking_detector`, `object_tracker` y `vehicle_detector` se instanciaban con valores por defecto ignorando `settings` (el threshold de parking quedaba en 300s aunque se configurara otro). Fix: se instancian con `settings.PARKING_TIME_THRESHOLD`, `settings.CONFIDENCE_THRESHOLD` y `settings.DEVICE`.
+8. **Spam "Failed to read frame"**: al terminar un archivo de video, `cap.read()` fallaba para siempre y el hilo logueaba cada 0.1s. Fix en `services/ai_service.py`: al detectar EOF en fuente tipo archivo el hilo termina con estado `stopped: video ended` y un solo log; en streams RTSP se reintenta con backoff de 0.5s y log acotado.
+
+### Verificación end-to-end (Docker Compose, CPU)
+- Stack completo arriba: `db`, `redis`, `backend`, `ai_service`, `frontend` — todos `healthy`.
+- Imagen `ai_service`: YOLOv8 cargado (`/app/models/yolov8n.pt` incluido en el repo) + PaddleOCR disponible; `yolo_model_loaded` y OCR verificados en el contenedor.
+- OCR real en el contenedor: `ABC1234` y `PGR5480` → conf ≈ 0.9999.
+- Pipeline completo en el contenedor (backend alcanzable): detección (bus + car en frame 225 del video de prueba) → ByteTrack (confirmación a los 3 hits) → ParkingDetector (`is_parked=true` con `PARKING_TIME_THRESHOLD=5`) → upsert en `detected_vehicles` → evento `vehicle_parked` en `events`.
+- Fin de video: un solo log "End of video reached" y el hilo termina (0 mensajes "Failed to read frame" tras la corrección).
+- Nota: el video de tráfico de prueba (`ai/test_video.mp4`, descartado por `.gitignore`) no produce eventos de estacionamiento por sí solo porque los vehículos pasan de largo (tracks de <3 hits); es el comportamiento esperado del tracker.
+
+### Cambios de código
+- `ai/Dockerfile`: torchvision CPU desde el índice de PyTorch.
+- `ai/.dockerignore`: nuevo (excluye `.venv/`, caches, modelos, logs).
+- `ai/models/yolov8n.pt`: modelo YOLOv8n incluido para que compose funcione sin descargas.
+- `ai/app/backend_client.py`: `login()` no lanza; `_request` tolerante a fallos.
+- `ai/services/ai_service.py`: envíos al backend a prueba de fallos + manejo de EOF/backoff de lectura.
+- `ai/services/parking_detector.py`, `object_tracker.py`, `vehicle_detector.py`: singletons con `settings`.
+- `backend/main.py`: handler global devuelve `JSONResponse`.
+- `backend/routers/vehicles.py`: upsert de vehículos por `vehicle_id`+`camera_id`.
+
+### Pendientes restantes
+- Prueba end-to-end con cámara RTSP real (Hikvision) y placas legibles.
+- Ajustar `PARKING_TIME_THRESHOLD` a los tiempos reales de estacionamiento.
+- Evaluar `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True` para acelerar el primer arranque.

@@ -177,4 +177,10 @@ class VehicleDetector:
         return {"engine": "opencv-fallback", "reason": self._model_error}
 
 
-vehicle_detector = VehicleDetector()
+# Global detector instance (threshold/device taken from runtime settings)
+from app.config import settings
+
+vehicle_detector = VehicleDetector(
+    confidence_threshold=settings.CONFIDENCE_THRESHOLD,
+    device=settings.DEVICE,
+)

@@ -137,6 +137,8 @@ class AIService:
 
         stop_event = self.stop_events.get(camera_id)
         frame_count = 0
+        consecutive_read_failures = 0
+        is_stream = rtsp_url.startswith(("rtsp://", "http://", "https://", "rtmp://"))
         try:
             while stop_event is not None and not stop_event.is_set():
                 if camera_id not in self.frame_queues:
@@ -149,10 +151,27 @@ class AIService:
 
                 ret, frame = cap.read()
                 if not ret:
-                    logger.warning("Failed to read frame from camera %s", camera_id)
-                    time.sleep(0.1)
+                    consecutive_read_failures += 1
+                    if not is_stream:
+                        logger.warning(
+                            "End of video reached for camera %s", camera_id
+                        )
+                        if camera_id in self.camera_info:
+                            self.camera_info[camera_id]["status"] = "stopped: video ended"
+                        break
+                    if (
+                        consecutive_read_failures == 1
+                        or consecutive_read_failures % 50 == 0
+                    ):
+                        logger.warning(
+                            "Failed to read frame from camera %s (%d consecutive)",
+                            camera_id,
+                            consecutive_read_failures,
+                        )
+                    time.sleep(0.5)
                     continue
 
+                consecutive_read_failures = 0
                 frame_count += 1
                 info = self.camera_info.get(camera_id)
                 if info is not None:
@@ -271,28 +290,38 @@ class AIService:
             "bbox": detection["bbox"],
             "license_plate": plate,
         }
-        ok = backend_client.post_vehicle(vehicle_payload)
+        try:
+            ok = backend_client.post_vehicle(vehicle_payload)
+        except Exception as exc:
+            logger.warning("Failed to report vehicle to backend: %s", exc)
+            ok = False
 
         if parked_now and not was_parked:
-            backend_client.post_event(
-                {
-                    "camera_id": camera_id,
-                    "event_type": "vehicle_parked",
-                    "description": f"Vehículo {detection['vehicle_type']} estacionado (track {track_id})",
-                    "license_plate": plate,
-                    "meta": {"track_id": track_id, "bbox": detection["bbox"]},
-                }
-            )
+            try:
+                backend_client.post_event(
+                    {
+                        "camera_id": camera_id,
+                        "event_type": "vehicle_parked",
+                        "description": f"Vehículo {detection['vehicle_type']} estacionado (track {track_id})",
+                        "license_plate": plate,
+                        "meta": {"track_id": track_id, "bbox": detection["bbox"]},
+                    }
+                )
+            except Exception as exc:
+                logger.warning("Failed to report park event to backend: %s", exc)
         elif not parked_now and was_parked:
-            backend_client.post_event(
-                {
-                    "camera_id": camera_id,
-                    "event_type": "vehicle_left",
-                    "description": f"Vehículo {detection['vehicle_type']} abandonó el lugar (track {track_id})",
-                    "license_plate": plate,
-                    "meta": {"track_id": track_id, "bbox": detection["bbox"]},
-                }
-            )
+            try:
+                backend_client.post_event(
+                    {
+                        "camera_id": camera_id,
+                        "event_type": "vehicle_left",
+                        "description": f"Vehículo {detection['vehicle_type']} abandonó el lugar (track {track_id})",
+                        "license_plate": plate,
+                        "meta": {"track_id": track_id, "bbox": detection["bbox"]},
+                    }
+                )
+            except Exception as exc:
+                logger.warning("Failed to report leave event to backend: %s", exc)
 
         if ok:
             states[track_id] = {

@@ -291,5 +291,7 @@ class ByteTrack:
         
         return intersection / union
 
-# Global tracker instance
-object_tracker = ByteTrack()
+# Global tracker instance (confidence threshold taken from runtime settings)
+from app.config import settings
+
+object_tracker = ByteTrack(track_thresh=settings.CONFIDENCE_THRESHOLD)

@@ -35,23 +35,27 @@ class BackendClient:
     def _url(self, path: str) -> str:
         return urljoin(f"{self.base_url}/", path.lstrip("/"))
 
-    def login(self) -> str:
-        """Authenticate and cache the access token."""
-        resp = requests.post(
-            self._url("/api/auth/login"),
-            data={"username": self.username, "password": self.password},
-            timeout=self.timeout,
-        )
+    def login(self) -> Optional[str]:
+        """Authenticate and cache the access token. Returns None on failure."""
+        try:
+            resp = requests.post(
+                self._url("/api/auth/login"),
+                data={"username": self.username, "password": self.password},
+                timeout=self.timeout,
+            )
+        except requests.RequestException as exc:
+            logger.warning("Backend login request failed: %s", exc)
+            return None
         if resp.status_code != 200:
             logger.error(
                 "Backend login failed: %s %s", resp.status_code, resp.text[:200]
             )
-            raise RuntimeError(f"Backend login failed with status {resp.status_code}")
+            return None
         self._token = resp.json()["access_token"]
         logger.info("Authenticated with backend as %s", self.username)
         return self._token
 
-    def _ensure_token(self) -> str:
+    def _ensure_token(self) -> Optional[str]:
         if self._token is None:
             with self._lock:
                 if self._token is None:
@@ -60,7 +64,13 @@ class BackendClient:
 
     def _request(self, method: str, path: str, json: Optional[Dict[str, Any]] = None):
         with self._lock:
-            token = self._ensure_token()
+            try:
+                token = self._ensure_token()
+            except Exception as exc:
+                logger.warning("Failed to obtain backend token: %s", exc)
+                return None
+            if token is None:
+                return None
             try:
                 return requests.request(
                     method,

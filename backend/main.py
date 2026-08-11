@@ -74,12 +74,16 @@ async def root():
 
 # Global exception handler
 from datetime import datetime
+from fastapi.responses import JSONResponse
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
-    logger.error(f"Global exception handler caught: {exc}")
-    return {
-        "error": "Internal server error",
-        "message": "An unexpected error occurred",
-        "timestamp": datetime.now().isoformat()
-    }
+    logger.error(f"Global exception handler caught: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "message": "An unexpected error occurred",
+            "timestamp": datetime.now().isoformat()
+        }
+    )

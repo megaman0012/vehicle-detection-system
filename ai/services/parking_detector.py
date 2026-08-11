@@ -137,5 +137,9 @@ class ParkingDetector:
             del self.vehicle_states[track_id]
             logger.debug(f"Reset state for vehicle {track_id}")
 
-# Global parking detector instance
-parking_detector = ParkingDetector()
+# Global parking detector instance (threshold taken from runtime settings)
+from app.config import settings
+
+parking_detector = ParkingDetector(
+    parking_time_threshold=settings.PARKING_TIME_THRESHOLD
+)

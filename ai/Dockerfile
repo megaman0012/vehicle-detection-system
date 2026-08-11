@@ -25,9 +25,13 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install --upgrade pip setuptools wheel
 
 # Install CPU builds of PyTorch first (smaller image, works without a GPU);
-# `-r requirements.txt` then skips torch because it is already satisfied.
+# `-r requirements.txt` then skips torch/torchvision because they are already
+# satisfied. IMPORTANT: torchvision MUST come from the same CPU index as torch,
+# otherwise the CUDA-compiled ops (e.g. torchvision::nms used by YOLO) fail
+# against the CPU torch build with "operator does not exist".
 RUN pip3 install --no-cache-dir \
     torch==2.4.0 \
+    torchvision==0.19.0 \
     --index-url https://download.pytorch.org/whl/cpu
 
 # Copy requirements and install Python dependencies

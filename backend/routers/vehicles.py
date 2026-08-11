@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from database import get_db
@@ -58,10 +59,53 @@ async def create_vehicle(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Camera not found"
         )
-    
-    db_vehicle = DetectedVehicle(**vehicle.dict())
-    db.add(db_vehicle)
-    db.commit()
+
+    # Upsert by vehicle_id + camera_id: the AI service reuses track IDs after a
+    # restart (T-1, T-2, ...), so the same vehicle_id may already exist.
+    db_vehicle = db.query(DetectedVehicle).filter(
+        DetectedVehicle.vehicle_id == vehicle.vehicle_id,
+        DetectedVehicle.camera_id == vehicle.camera_id,
+    ).first()
+
+    data = vehicle.dict()
+    if db_vehicle is None:
+        db_vehicle = DetectedVehicle(**data)
+        db.add(db_vehicle)
+    else:
+        for field, value in data.items():
+            setattr(db_vehicle, field, value)
+        db_vehicle.last_seen = datetime.now(timezone.utc)
+
+    # Track parking timing
+    now = datetime.now(timezone.utc)
+    if data.get("is_parked") and db_vehicle.park_start_time is None:
+        db_vehicle.park_start_time = now
+    elif not data.get("is_parked") and db_vehicle.park_start_time is not None:
+        parked_until = db_vehicle.park_start_time
+        if parked_until.tzinfo is None:
+            parked_until = parked_until.replace(tzinfo=timezone.utc)
+        elapsed = now - parked_until
+        if elapsed.total_seconds() > 0:
+            if db_vehicle.total_park_time is None:
+                db_vehicle.total_park_time = timedelta(0)
+            db_vehicle.total_park_time = (db_vehicle.total_park_time or timedelta(0)) + elapsed
+        db_vehicle.park_start_time = None
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        db_vehicle = db.query(DetectedVehicle).filter(
+            DetectedVehicle.vehicle_id == vehicle.vehicle_id,
+            DetectedVehicle.camera_id == vehicle.camera_id,
+        ).first()
+        if db_vehicle is None:
+            raise
+        for field, value in data.items():
+            setattr(db_vehicle, field, value)
+        db_vehicle.last_seen = datetime.now(timezone.utc)
+        db.commit()
+
     db.refresh(db_vehicle)
     return db_vehicle
 

@@ -112,7 +112,7 @@ AI_SERVICE_HOST=0.0.0.0
 AI_SERVICE_PORT=8001
 BACKEND_URL=http://backend:8000
 MODEL_PATH=/app/models
-DEVICE=cuda  # Cambiar a 'cpu' si no hay GPU disponible
+DEVICE=cpu  # 'cuda' en hosts con GPU; sin GPU el servicio cae a 'cpu' automáticamente
 
 # YOLO Model Configuration
 YOLO_MODEL=yolov8n.pt
@@ -133,7 +133,7 @@ OCR_USE_ANGLE_CLS=true
 OCR_USE_GPU=false
 
 # Parking Detection Configuration
-PARKING_TIME_THRESHOLD_MINUTES=30
+PARKING_TIME_THRESHOLD=300  # Segundos sin movimiento para considerar un vehículo estacionado
 MOTION_THRESHOLD_PIXELS=50
 
 # WhatsApp Configuration (Evolution API)
@@ -389,6 +389,13 @@ Para manejar múltiples cámaras de alta resolución:
    - Revisar los logs de la base de datos para errores
    - Asegurarse de que haya suficiente espacio en disco
    - Considerar aumentar los recursos asignados a PostgreSQL
+
+6. **YOLO falla con `operator torchvision::nms does not exist`**:
+   - Ocurre si `torch` se instaló desde el índice CPU (`https://download.pytorch.org/whl/cpu`) pero `torchvision` se resolvió desde PyPI (wheel CUDA). Ambos deben venir del mismo índice.
+   - El `ai/Dockerfile` ya instala `torch==2.4.0` + `torchvision==0.19.0` juntos desde el índice CPU; si se reinstala a mano, mantener ambos del mismo índice.
+
+7. **`POST /api/vehicles/` devuelve 500 con `UniqueViolation`**:
+   - Ocurre cuando el AI service reusa track IDs (T-1, T-2...) tras un reinicio y el `vehicle_id` ya existe en la base. Desde la última corrección el backend hace upsert por `vehicle_id` + `camera_id`; si el error persiste, verificar que `backend/routers/vehicles.py` tenga el upsert (reconstruir la imagen del backend).
 
 #### Logs de Depuración
 
