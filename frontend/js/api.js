@@ -225,6 +225,24 @@ const API = (function() {
         return request('/api/auth/me');
     }
 
+    // ---- AI service (proxied through /ai/*) ----
+
+    function aiGetStatus() {
+        return request('/ai/api/detection/status');
+    }
+
+    function aiStartCamera(cameraId, data) {
+        return request('/ai/api/detection/cameras/' + cameraId + '/start', { method: 'POST', body: data });
+    }
+
+    function aiStopCamera(cameraId) {
+        return request('/ai/api/detection/cameras/' + cameraId + '/stop', { method: 'POST', body: {} });
+    }
+
+    function aiGetCameraResults(cameraId) {
+        return request('/ai/api/detection/cameras/' + cameraId + '/results');
+    }
+
     return {
         getToken: getToken,
         getStoredUser: getStoredUser,
@@ -246,6 +264,10 @@ const API = (function() {
         getStats: getStats,
         getConfigs: getConfigs,
         getUsers: getUsers,
-        getCurrentUser: getCurrentUser
+        getCurrentUser: getCurrentUser,
+        aiGetStatus: aiGetStatus,
+        aiStartCamera: aiStartCamera,
+        aiStopCamera: aiStopCamera,
+        aiGetCameraResults: aiGetCameraResults
     };
 })();

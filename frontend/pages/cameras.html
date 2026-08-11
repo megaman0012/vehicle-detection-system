@@ -74,13 +74,136 @@
 
             <!-- Cameras Content -->
             <div class="container-fluid px-4" id="cameras-content">
-                <div class="col-12 py-5 text-center text-muted">
-                    <i class="fas fa-video fa-3x opacity-25 mb-3"></i>
-                    <p class="mb-0">Gestión de cámaras en construcción.</p>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Cámaras Registradas</h5>
+                                <div>
+                                    <button class="btn btn-outline-secondary me-2" id="aiStatusBtn" title="Estado del servicio de IA">
+                                        <i class="fas fa-microchip me-1"></i> Estado IA
+                                    </button>
+                                    <button class="btn btn-primary" id="newCameraBtn">
+                                        <i class="fas fa-plus me-1"></i> Nueva Cámara
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="camerasTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Ubicación</th>
+                                                <th>Stream</th>
+                                                <th>Estado</th>
+                                                <th>Procesamiento IA</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando cámaras...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- Camera Modal -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cameraModalTitle">Nueva Cámara</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cameraForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="cameraId">
+                        <div class="mb-3">
+                            <label for="cameraName" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="cameraName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cameraLocation" class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="cameraLocation" placeholder="Ej: Entrada principal">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cameraRtsp" class="form-label">URL RTSP *</label>
+                            <input type="text" class="form-control" id="cameraRtsp" placeholder="rtsp://user:pass@host:554/stream" required>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="cameraUsername" class="form-label">Usuario RTSP</label>
+                                <input type="text" class="form-control" id="cameraUsername">
+                            </div>
+                            <div class="col-6">
+                                <label for="cameraPassword" class="form-label">Contraseña RTSP</label>
+                                <input type="password" class="form-control" id="cameraPassword">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-4">
+                                <label for="cameraFps" class="form-label">FPS</label>
+                                <input type="number" class="form-control" id="cameraFps" value="30" min="1" max="60">
+                            </div>
+                            <div class="col-4">
+                                <label for="cameraWidth" class="form-label">Ancho</label>
+                                <input type="number" class="form-control" id="cameraWidth" value="1920" min="0">
+                            </div>
+                            <div class="col-4">
+                                <label for="cameraHeight" class="form-label">Alto</label>
+                                <input type="number" class="form-control" id="cameraHeight" value="1080" min="0">
+                            </div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="cameraActive" checked>
+                            <label class="form-check-label" for="cameraActive">Activa</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveCameraBtn">
+                            <i class="fas fa-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Status Modal -->
+    <div class="modal fade" id="aiStatusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Estado del Servicio de IA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="aiStatusBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">Consultando estado...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->

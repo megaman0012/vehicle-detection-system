@@ -309,6 +309,11 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
 - Creados skeletons de las 5 páginas nuevas + sus JS (`cameras.js`, `parking.js`, `reports.js`, `settings.js`, `users.js`).
 - Sintaxis verificada con `node --check` en todos los JS.
 
+### Paso 3 completado ✅ (página Cámaras)
+- `api.js`: nuevas funciones hacia el AI service a través del proxy `/ai/*`: `aiGetStatus()`, `aiStartCamera(cameraId, {rtsp_url, username, password})`, `aiStopCamera(cameraId)`, `aiGetCameraResults(cameraId)`.
+- `pages/cameras.html`: tabla de cámaras (nombre, ubicación, stream, estado activa/inactiva, procesamiento IA, acciones), botón "Nueva Cámara", modal de crear/editar cámara (nombre, ubicación, RTSP, credenciales, FPS, resolución, activa) y modal "Estado IA".
+- `js/cameras.js`: CRUD real contra `/api/cameras/`, control de IA (start/stop) contra `/ai/api/detection/...`, indicador "Procesando/Detenida" por cámara consultando `/ai/api/detection/status`, refresh automático (IA cada 10s, lista cada 30s).
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
