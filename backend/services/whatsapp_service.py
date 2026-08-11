@@ -20,8 +20,7 @@ class WhatsAppService:
             "apikey": self.api_key,
             "Content-Type": "application/json"
         }
-        self.base_url = f"{self.api_url}/instance/{self.instance_name}"
-    
+
     async def send_message(self, 
                           phone_number: str, 
                           message: str,
@@ -45,13 +44,12 @@ class WhatsAppService:
             # Assume US number if 10 digits and doesn't start with 1
             clean_number = '1' + clean_number
         
-        url = f"{self.base_url}/sendMessage"
-        
+        # Evolution API v2 endpoint for sending a text message
+        url = f"{self.api_url}/message/sendText/{self.instance_name}"
+
         payload = {
             "number": clean_number,
-            "textMessage": {
-                "text": message
-            }
+            "text": message
         }
         
         try:
@@ -190,7 +188,10 @@ class WhatsAppService:
         Returns:
             API response as dictionary
         """
-        url = f"{self.base_url}/fetchInstances"
+        # Evolution API v2 endpoint: connection state of the configured instance
+        # (validates that the API is reachable, the API key is accepted and the
+        # instance exists / is linked to a WhatsApp number)
+        url = f"{self.api_url}/instance/connectionState/{self.instance_name}"
         
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:

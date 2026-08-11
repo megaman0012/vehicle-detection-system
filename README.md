@@ -258,24 +258,33 @@ El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-
 
 **Configuración (2 pasos):**
 
-1. **Levanta/consigue una instancia de Evolution API** (puede ser en otro servidor): `evolution-api/evolution-api`, por ejemplo:
+1. **Levanta una instancia de Evolution API** (puede ser en este u otro servidor; imagen oficial `atendai/evolution-api`):
    ```bash
+   # 1) Genera tu API Key (la inventas tú; es el secreto que conecta tu sistema con Evolution)
+   openssl rand -hex 32
+
+   # 2) Levanta Evolution API
    docker run -d --name evolution --restart unless-stopped -p 8080:8080 \
-     -e AUTHENTICATION_API_KEY=tu-clave \
-     -e DATABASE_CONNECTION_URI=... \
-     -e DATABASE_SAVE_DATA_INSTANCE=true \
-     -e DATABASE_SAVE_DATA_NEW_MESSAGE=true \
-     -e DATABASE_SAVE_MESSAGE_UPDATE=true \
-     -e DATABASE_SAVE_CONTACTS_INSTANCE=true \
-     -e DATABASE_SAVE_CHATS=true \
-     -e DATABASE_SAVE_MESSAGES=true \
-     -e DATABASE_SAVE_MESSAGE_UPDATE=true \
-     -e DATABASE_SAVE_CONTACTS_INSTANCE=true \
-     -e DATABASE_SAVE_CHATS=true \
-     -e DATABASE_SAVE_MESSAGES=true \
-     atomikos/evolution-api
+     -e AUTHENTICATION_API_KEY=LA_CLAVE_QUE_GENERASTE \
+     -v evolution_store:/evolution/store \
+     -v evolution_instances:/evolution/instances \
+     atendai/evolution-api
    ```
-   Luego crea una instancia (nombre, p.ej. `vehicle-detection`), vincula tu número con el código QR y copia la API Key. La URL de la API es `http://IP-evolution:8080`.
+   Luego crea la instancia de WhatsApp y vincula tu número escaneando el QR:
+   ```bash
+   curl -X POST http://localhost:8080/instance/create \
+     -H "apikey: LA_CLAVE_QUE_GENERASTE" \
+     -H "Content-Type: application/json" \
+     -d '{"instanceName":"vehicle-detection","qrcode":true,"integration":"WHATSAPP-BAILEYS"}'
+   # → en la respuesta viene el QR en base64; guárdalo en un archivo .png y
+   #   escanéalo desde WhatsApp: Ajustes > Dispositivos vinculados > Vincular dispositivo
+
+   # Verifica que quedó conectada:
+   curl http://localhost:8080/instance/connectionState/vehicle-detection \
+     -H "apikey: LA_CLAVE_QUE_GENERASTE"
+   # → {"instance":{"state":"open",...}} significa conectado
+   ```
+   Los 3 datos que pide el sistema son: **URL** (`http://IP-evolution:8080`), **API Key** (la que generaste) e **instancia** (`vehicle-detection`).
 
 2. **Configúralo en el sistema:** Menú → Configuración → "Notificaciones WhatsApp" → ingresa `URL de la API (Evolution)`, `API Key` e `instancia` → "Guardar Configuración" → "Probar Conexión".
 
@@ -284,6 +293,8 @@ El sistema envía mensajes de WhatsApp mediante **Evolution API** (una API auto-
 - En Historial de Eventos: botón verde WhatsApp de cualquier evento → pide número → encola `POST /api/whatsapp/send-message`.
 
 **Nota:** la configuración de WhatsApp se guarda **en memoria** (singleton del backend), no en base de datos; se pierde al reiniciar el contenedor `backend`. Los mensajes se encolan en background (`BackgroundTasks`). Actualmente el envío es manual; no hay aún envío automático al detectar estacionamiento (las claves `whatsapp_enabled`/`default_whatsapp_numbers` existen en la BD pero aún no se leen para auto-notificar).
+
+**Compatibilidad:** el servicio usa los endpoints **v2** de Evolution API (`POST /message/sendText/{instancia}` con `{number, text}` para enviar, y `GET /instance/connectionState/{instancia}` para la prueba de conexión). La imagen `atendai/evolution-api` (2.x) es la soportada.
 
 ### API REST
 

@@ -477,4 +477,27 @@ Se completaron las tareas pendientes de la sesión anterior: se habilitó Docker
 ### Commits
 - (pendiente de commitear/pushear en esta sesión)
 
+---
+
+## Sesión: lunes, 11 de agosto de 2026 — WhatsApp corregido para Evolution API v2 (prueba real lista)
+
+### Qué descubrimos (pregunta del usuario: "¿de dónde sale la clave atomikos?")
+- La imagen que mencioné antes (`atomikos/evolution-api`) era un error de memoria: la imagen oficial es **`atendai/evolution-api`**.
+- La **API Key no se "saca" de ningún lado**: la genera el propio usuario (`openssl rand -hex 32`), se le pasa a Evolution API como `AUTHENTICATION_API_KEY` al arrancar el contenedor, y es la misma que se pega en la Configuración del sistema. Evolution valida esa clave en el header `apikey` de cada petición.
+- Flujo real completo: levantar Evolution → crear instancia (`POST /instance/create` con `qrcode:true`) → escanear el QR con WhatsApp (Ajustes > Dispositivos vinculados) → verificar `GET /instance/connectionState/{instancia}` = `open` → configurar los 3 datos en el sistema → enviar.
+
+### Bug encontrado: el backend hablaba API v1, Evolution actual es v2
+- `backend/services/whatsapp_service.py` usaba endpoints de la **v1**:
+  - envío: `POST {api_url}/instance/{instancia}/sendMessage` con body `{number, textMessage:{text}}`
+  - prueba: `GET {api_url}/instance/{instancia}/fetchInstances` (endpoint inexistente)
+- Con `atendai/evolution-api` 2.x ambos devolvían 404 → la prueba real habría fallado.
+- **Corregido a v2** (verificado contra el quickstart oficial):
+  - envío: `POST {api_url}/message/sendText/{instancia}` con body `{number, text}`
+  - prueba: `GET {api_url}/instance/connectionState/{instancia}`
+- Se eliminó `self.base_url` (quedaba sin uso). `py_compile` OK; backend reiniciado y `/health` OK (el código va por bind mount `./backend:/app`).
+- README: imagen corregida a `atendai/evolution-api`, pasos reales con QR y verificación de estado.
+
+### Commits
+- (pendiente de commitear/pushear en esta sesión)
+
 *Actualizado: lunes, 11 de agosto de 2026*
