@@ -124,9 +124,13 @@ BYTETRACK_THRESHOLD=0.5
 BYTETRACK_MATCH_THRESHOLD=0.8
 
 # PaddleOCR Configuration
+# PaddleOCR 3.x auto-detecta el dispositivo (CPU si no hay GPU).
+# En el primer uso descarga automáticamente los modelos PP-OCRv6 (~150 MB).
+# oneDNN/MKLDNN se desactiva por defecto en CPU para evitar un crash conocido
+# de paddlepaddle (PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT=False se fija en el código).
 OCR_LANG=en
 OCR_USE_ANGLE_CLS=true
-OCR_USE_GPU=true
+OCR_USE_GPU=false
 
 # Parking Detection Configuration
 PARKING_TIME_THRESHOLD_MINUTES=30
@@ -374,7 +378,13 @@ Para manejar múltiples cámaras de alta resolución:
    - Verificar que el número de teléfono tenga el formato correcto (con código de país)
    - Revisar los logs del servicio de WhatsApp para errores específicos
 
-4. **Problemas de base de datos**:
+4. **PaddleOCR no detecta placas o falla al iniciar**:
+   - Verificar que los modelos PP-OCRv6 se hayan descargado (primera ejecución; requieren salida a internet) en `~/.paddlex/official_models/`
+   - En CPU, el servicio fija `PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT=False` para evitar un crash de paddlepaddle 3.3.x (`NotImplementedError: ConvertPirAttribute2RuntimeAttribute`)
+   - Confirmar el estado en `GET /ai/api/detection/status` → `ocr_available: true`
+   - Las placas deben coincidir con los patrones del recognizer (p. ej. `ABC1234`, `XYZ789`); si el OCR lee bien pero la placa se rechaza, revisar `plate_patterns` en `ai/services/license_plate_recognizer.py`
+
+5. **Problemas de base de datos**:
    - Verificar que el contenedor de PostgreSQL esté en ejecución
    - Revisar los logs de la base de datos para errores
    - Asegurarse de que haya suficiente espacio en disco

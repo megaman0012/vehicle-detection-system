@@ -378,3 +378,41 @@ El plan paso a paso quedó terminado: los 9 pasos fueron commitados de forma ind
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
+## Sesión: PaddleOCR Real — Reconocimiento de Placas Habilitado (lunes, 10 de agosto de 2026)
+
+### Objetivo (tarea pendiente #1)
+Activar el reconocimiento de placas real con PaddleOCR. Hasta ahora el AI service usaba el fallback OpenCV y `paddleocr`/`paddlepaddle`/`torch`/`ultralytics` estaban comentados en `ai/requirements.txt` (requerían `swig`, `gcc`, `make` y sufrían incompatibilidades de numpy).
+
+### Problemas encontrados y soluciones
+1. **Falta `swig`**: no existe en BaseOS/AppStream/EPEL de CentOS Stream 10 → está en el repo **CRB**: `dnf install --enablerepo=crb swig` (SWIG 4.3.0).
+2. **Stack PaddleOCR 2.x incompatible en 2026**: `paddleocr==2.7.3` sube `numpy` a 2.x (rompe `paddlepaddle==2.6.x`, que exige `numpy<2`) y arrastra decenas de dependencias viejas sin resolver limpiamente. Se migró a la línea mantenida: **`paddleocr==3.7.0` + `paddlepaddle==3.3.1`** (soporta numpy 1.26 y 2.x; `paddlex` pide `numpy>=1.24,<2.4`).
+3. **La API de PaddleOCR v3 cambió**: ya no existen `use_gpu`/`use_angle_cls`/`show_log`; ahora se pasa `device` y `use_textline_orientation`, y `ocr.predict(img)` devuelve un objeto `PaddleOCRResult` (`result.json["res"]["rec_texts"/"rec_scores"]`), no la lista de líneas de v2. Se reescribió `ai/services/license_plate_recognizer.py` para la API v3 con fallback a v2.
+4. **Crash de paddlepaddle 3.3.1 en CPU con oneDNN**: `NotImplementedError: ConvertPirAttribute2RuntimeAttribute ... onednn_instruction.cc:116` al inferir PP-OCRv6. Solución: `PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT=False` (fijado por defecto en el código del recognizer).
+5. **Modelos**: PP-OCRv6 (det + rec) y PP-LCNet_x1_0_textline_ori se descargan automáticamente al primer uso en `~/.paddlex/official_models/`.
+
+### Cambios de código
+- `ai/services/license_plate_recognizer.py`: soporte de API v3 (principal) y v2 (fallback); preprocesado de placa en 3 canales (ya no binario) para el modelo neuronal; parsing de `rec_texts`/`rec_scores`.
+- `ai/requirements.txt`: habilitado el stack ML — `ultralytics==8.2.103`, `torch==2.4.0`, `paddleocr==3.7.0`, `paddlepaddle==3.3.1` (se mantiene `numpy>=1.26,<2`).
+- `ai/Dockerfile`: herramientas de build (`swig`, `build-essential`, `python3-dev`), librerías de PaddleOCR (`libgomp1`, `libsm6`, `libxext6`, `libxrender1`), torch CPU desde el índice de PyTorch y se eliminó `--only-binary=:all:`.
+- `ai/services/vehicle_detector.py`: si se pide `DEVICE=cuda` sin GPU → cae a `cpu` (antes caía al detector OpenCV).
+- `docker-compose.yml`: `DEVICE=cpu` (este servidor no tiene GPU).
+
+### Verificación (venv local `ai/.venv`, Python 3.12, CPU)
+- `pip install "paddleocr==3.7.0" "paddlepaddle==3.3.1" "numpy>=1.26,<2"` resuelve e instala limpio (verificado también por `pip install --dry-run`).
+- OCR real sobre placas sintéticas: `ABC1234` → ok (conf 1.0), `XYZ-789` → `XYZ789` (conf 0.9999), `PGR5480` → ok.
+- Escenario con placa en la parte baja del vehículo (recorte por regiones) → placa detectada correctamente.
+- `ai_service.get_status()` → `ocr_available: true`, `api_version: 3`.
+
+### Documentación
+- `README.md`: nota de configuración de PaddleOCR (descarga de modelos, oneDNN) y nuevo punto de troubleshooting.
+- `DEVELOPMENT_SETUP_SUMMARY.md`: PaddleOCR movido de pendientes a resueltos.
+- Este historial.
+
+### Pendientes restantes
+- Build completo de la imagen `ai_service` con Docker Compose (stack ML) y prueba end-to-end con una cámara real.
+- `systemctl enable --now docker`.
+- Spam de log "Failed to read frame" al terminar videos de prueba (menor).
+
+---
+*Actualizado: lunes, 10 de agosto de 2026*
+

@@ -55,7 +55,7 @@ services:
     environment:
       - BACKEND_URL=http://backend:8000
       - MODEL_PATH=/app/models
-      - DEVICE=cuda  # Will use GPU if available, otherwise CPU
+      - DEVICE=cpu  # This server has no GPU; set to cuda on GPU hosts
     volumes:
       - ./ai:/app
       - ./ai/models:/app/models

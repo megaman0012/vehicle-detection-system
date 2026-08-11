@@ -72,8 +72,12 @@ class VehicleDetector:
                     )
                     logger.warning(self._model_error)
                     return
+            device = self.device
+            if device == "cuda" and not torch.cuda.is_available():
+                logger.warning("CUDA requested but not available; falling back to CPU")
+                device = "cpu"
             self.model = YOLO(model_path)
-            self.model.to(self.device)
+            self.model.to(device)
             logger.info("YOLOv8 model loaded from %s on %s", model_path, self.device)
         except Exception as exc:
             self._model_error = f"Failed to load YOLOv8 model: {exc}"
