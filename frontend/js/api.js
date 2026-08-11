@@ -201,6 +201,18 @@ const API = (function() {
         return request('/api/zones/');
     }
 
+    function createZone(data) {
+        return request('/api/zones/', { method: 'POST', body: data });
+    }
+
+    function updateZone(zoneId, data) {
+        return request('/api/zones/' + zoneId, { method: 'PUT', body: data });
+    }
+
+    function deleteZone(zoneId) {
+        return request('/api/zones/' + zoneId, { method: 'DELETE' });
+    }
+
     function getSystemStatus() {
         return request('/api/system/status');
     }
@@ -259,6 +271,9 @@ const API = (function() {
         getEvents: getEvents,
         getRecentEvents: getRecentEvents,
         getZones: getZones,
+        createZone: createZone,
+        updateZone: updateZone,
+        deleteZone: deleteZone,
         getSystemStatus: getSystemStatus,
         getSystemMetrics: getSystemMetrics,
         getStats: getStats,

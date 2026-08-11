@@ -74,13 +74,162 @@
 
             <!-- Parking Content -->
             <div class="container-fluid px-4" id="parking-content">
-                <div class="col-12 py-5 text-center text-muted">
-                    <i class="fas fa-parking fa-3x opacity-25 mb-3"></i>
-                    <p class="mb-0">Gestión de estacionamiento en construcción.</p>
+                <!-- Vehículos estacionados -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Vehículos Estacionados Actualmente</h5>
+                                <button class="btn btn-outline-secondary btn-refresh-parking" title="Actualizar">
+                                    <i class="fas fa-sync-alt me-1"></i> Actualizar
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="parkedVehiclesTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>ID de Seguimiento</th>
+                                                <th>Tipo</th>
+                                                <th>Placa</th>
+                                                <th>Cámara</th>
+                                                <th>Visto por Primera Vez</th>
+                                                <th>Última Vez</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando vehículos estacionados...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zonas de estacionamiento -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Zonas de Estacionamiento</h5>
+                                <button class="btn btn-primary" id="newZoneBtn">
+                                    <i class="fas fa-plus me-1"></i> Nueva Zona
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" id="zonesTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Cámara</th>
+                                                <th>Puntos</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando zonas...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+    </div>
+
+    <!-- Zone Modal -->
+    <div class="modal fade" id="zoneModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="zoneModalTitle">Nueva Zona</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="zoneForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="zoneId">
+                        <div class="mb-3">
+                            <label for="zoneName" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="zoneName" placeholder="Ej: Zona A" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="zoneCamera" class="form-label">Cámara *</label>
+                            <select class="form-select" id="zoneCamera" required>
+                                <option value="">Seleccione una cámara...</option>
+                            </select>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="zoneActive" checked>
+                            <label class="form-check-label" for="zoneActive">Activa</label>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0 small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Después de crear la zona podrá dibujar sus coordenadas sobre la cámara.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveZoneBtn">
+                            <i class="fas fa-save me-1"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone Drawing Modal -->
+    <div class="modal fade" id="zoneDrawingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Dibujar Zona de Estacionamiento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="camera-feed-container">
+                        <div id="zoneDrawingFeed" class="camera-feed bg-dark min-vh-75 d-flex align-items-center justify-content-center text-white position-relative">
+                            <i class="fas fa-video-slash fa-3x opacity-25"></i>
+                            <div>Dibuje la zona de estacionamiento sobre la vista de la cámara</div>
+                            <canvas id="zoneDrawingCanvas" class="position-absolute top-0 start-0 w-100 h-100"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" id="undoZoneBtn">
+                                <i class="fas fa-undo me-1"></i> Deshacer
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearZoneBtn">
+                                <i class="fas fa-eraser me-1"></i> Limpiar
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-success" id="saveZoneBtn">
+                            <i class="fas fa-save me-1"></i> Guardar Coordenadas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap 5 JS -->

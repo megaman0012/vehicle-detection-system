@@ -314,6 +314,15 @@ Limpieza de archivos generados y commit del refactor de la API. Detalle arriba.
 - `pages/cameras.html`: tabla de cámaras (nombre, ubicación, stream, estado activa/inactiva, procesamiento IA, acciones), botón "Nueva Cámara", modal de crear/editar cámara (nombre, ubicación, RTSP, credenciales, FPS, resolución, activa) y modal "Estado IA".
 - `js/cameras.js`: CRUD real contra `/api/cameras/`, control de IA (start/stop) contra `/ai/api/detection/...`, indicador "Procesando/Detenida" por cámara consultando `/ai/api/detection/status`, refresh automático (IA cada 10s, lista cada 30s).
 
+### Paso 4 completado ✅ (página Estacionamiento)
+- `api.js`: `createZone()`, `updateZone()`, `deleteZone()` contra `/api/zones/`.
+- `pages/parking.html`: tabla de **vehículos estacionados** (ID de seguimiento, tipo, placa, cámara, primera/última vista) con botón de actualizar, y tabla de **zonas de estacionamiento** (nombre, cámara, nº de puntos, estado, acciones: dibujar/editar/eliminar).
+- `js/parking.js`: 
+  - Vehículos estacionados reales desde `/api/vehicles/parked/current` (refresh cada 30s).
+  - CRUD de zonas real contra `/api/zones/` (modal crear/editar con selector de cámara).
+  - Dibujo de coordenadas sobre canvas conectado a la API: clic para marcar vértices, deshacer, limpiar y guardar (`PUT /api/zones/{id}`). Se cargan las coordenadas existentes al editar.
+- Eliminado `main.js` (funciones de zona antiguas que solo logueaban) y `js/zone-management.js` (archivo huérfano no referenciado).
+
 ---
 *Actualizado: lunes, 10 de agosto de 2026*
 
